@@ -1,0 +1,18 @@
+VERSION := $(shell grep version pyproject.toml | head -n 1 | awk -F\" '{print $$2}')
+BUILD_OUTPUT := dist/bot-$(VERSION).tar.gz
+
+TARGET := hub-example-bot-$(VERSION).tar.gz
+
+SRC := $(wildcard src/*.py)
+
+all: $(TARGET)
+
+$(TARGET): $(BUILD_OUTPUT)
+	cp $< $@
+
+$(BUILD_OUTPUT): $(SRC) pyproject.toml poetry.lock
+	poetry build
+
+clean:
+	rm -rf dist
+	rm -f $(TARGET)
