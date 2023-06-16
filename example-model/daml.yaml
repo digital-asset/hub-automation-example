@@ -1,0 +1,11 @@
+sdk-version: 2.6.3
+name: example-model
+version: 0.1.0
+source: daml
+dependencies:
+- daml-prim
+- daml-stdlib
+- daml-script
+start-navigator: true
+# Remove this line when running against a ledger without user management.
+init-script: Setup:setup
