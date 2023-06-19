@@ -35,7 +35,7 @@ dazl = "^7.3.1"
 ├── pyproject.toml
 ```
 
-The file with the main portion of the code (here `pythonbot_example.py`) can have any name, but must be imported in `__init__.py` where the `main` function should be called as this file is what will be run when the bot is initialized:
+The file with the main portion of the code (here `pythonbot_example.py`) can have any name, but must be imported in `__init__.py` where the `main` function should be called. This file will be run when the bot is initialized:
 
 ### __init__.py
 ```python
