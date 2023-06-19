@@ -20,7 +20,7 @@ DAML_LEDGER_PARTY="party::1234" poetry run python3 -m bot
 Since `localhost:6865` is set as a default, you do not need to set the ledger URL, however `DAML_LEDGER_PARTY` must be set to a party that is allocated on the Daml ledger you are testing with - which will always be slightly different on Canton ledgers due to fingerprinting. `run_local.sh` can be used to dynamically fetch the `Alice` party and start the bot with it.
 
 ## Structure
-A Hub Python Automation should always module named `bot` as it is run on Hub with `python3 -m bot`.
+A Hub Python Automation should always be a module named `bot` as it is run on Hub with `python3 -m bot`.
 
 ### pyproject.toml
 ```toml
@@ -57,9 +57,9 @@ run(main())
 ## External Connectivity
 Python Automations running on ledgers owned by Enterprise users can connect to services running on the internet outside of Daml Hub. The outgoing IP address is dynamically set.
 
-For incoming connections, Daml Hub provides a webhookk URL of`http://{ledgerId}.daml.app/pythonbot/{instanceId}/`. This link can be copied from the Status Page for the running instance.
+For incoming connections, Daml Hub provides a webhook URL of`http://{ledgerId}.daml.app/pythonbot/{instanceId}/`. This link can be copied from the Status Page for the running instance.
 
-If you would like to accept traffic to that endpoint, you can run an `aiohttp` (or other Python) webserver running on the default `0.0.0.0:8080`. A request pointed directly to the webhook URL will be routed to the root `/` of your server.
+If you would like to accept traffic to that endpoint, you can run a webserver (such as with `aiohttp`) running on the default `0.0.0.0:8080`. A request pointed directly to the webhook URL will be routed to the root `/` of your server.
 
 
 ## Bot code
@@ -74,16 +74,16 @@ package_id="d36d2d419030b7c335eeeb138fa43520a81a56326e4755083ba671c1a2063e76"
 # Define the names of our templates for later reuse
 class Templates:
     User = f"{package_id}:User:User"
-    Alias = f"{package_id}:Alias:Alias"
-    Notification = f"{package_id}:Notification:Notification"
+    Alias = f"{package_id}:User:Alias"
+    Notification = f"{package_id}:User:Notification"
 ```
-The "Package ID" specifies the dar that we want to follow contracts from. If this is not included, Dazl will stream _all_ templates that have the same name. Including the package ID to use will make the bot not react to templates from models that are on the ledger that we are not interested in that may have the same template name, especially older versions of a model.
+The "Package ID" is the unique identifier of the dar that we want to follow contracts from. If this is not included, Dazl will stream _all_ templates that have the same name. Including the package ID will ensure that the bot only reacts to template from the Daml model that was specified. This is particularly important when a new version of a Daml model is uploaded to the ledger, since the names of the templates may remain the same.
 
 The Package ID of a dar can be found by running `daml damlc -- inspect /path/to/dar | grep "package"`
 
 ### Environment variables
 `dazl` requires a URL of the Daml ledger to connect to as well as a `Party` to act as. These wiill always be set as environment variables in Automations running in Daml Hub, but adding defaults can help with running locally.
-```
+```python
     # The URL path to the ledger you would like to connect to
     url = os.getenv('DAML_LEDGER_URL') or "localhost:6865"
 
@@ -121,7 +121,7 @@ The `Boundary` can be helpful helpful when starting a stream on ledger that alre
 `conn.exercise` was used in this example, but `create_and_exercise`, `exercise_by_key` and `create` commands are also available.
 
 ### Query
-`dazl` also  has `query`/`query_many` which will continue the program once the query is through instead of continuing to stream. Commands can also be defined and later submitted together with other commands as a single transaction. The following example queries for all current `Notification` templates, then submits all Acknowledge commands together:
+`dazl` also  has `query`/`query_many` which will continue the program once the query finished instead of continuing to stream. Commands can also be defined and later submitted together with other commands as a single transaction. The following example queries for all current `Notification` templates, then submits all Acknowledge commands together:
 ```python
 
 
@@ -138,7 +138,7 @@ The `Boundary` can be helpful helpful when starting a stream on ledger that alre
 
 # Sample code
 
-**This repo contains sample code to help you get started with DAml. Please bear
+**This repo contains sample code to help you get started with Daml. Please bear
 in mind that it is provided for illustrative purposes only, and as such may not
 be production quality and/or may not fit your use-cases. You may use the
 contents of this repo in parts or in whole according to the BSD0 license:**
