@@ -1,9 +1,12 @@
 VERSION := $(shell grep version pyproject.toml | head -n 1 | awk -F\" '{print $$2}')
 BUILD_OUTPUT := dist/bot-$(VERSION).tar.gz
 
-TARGET := hub-example-bot-$(VERSION).tar.gz
+NAME := hub-example-bot
 
-SRC := $(wildcard src/*.py)
+TARGET := $(NAME)-$(VERSION).tar.gz
+
+
+SRC := $(wildcard bot/*.py)
 
 all: $(TARGET)
 

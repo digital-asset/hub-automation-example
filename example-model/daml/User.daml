@@ -45,3 +45,17 @@ template Alias with
         archive self
         create this with alias = newAlias
 -- ALIAS_END
+
+-- NOTIFICATION_BEGIN
+template Notification with
+    username: Party
+    message: Text
+    public: Party
+  where
+    signatory username
+    observer public
+
+    choice Acknowledge : () with
+      controller username
+      do return ()
+-- NOTIFICATION_END

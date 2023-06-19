@@ -4,7 +4,7 @@ import os
 
 import dazl
 from dazl import connect
-from dazl.ledger import CreateEvent, ArchiveEvent, Boundary
+from dazl.ledger import CreateEvent, ArchiveEvent, Boundary, ExerciseCommand
 from dazl.prim import Party
 
 
@@ -25,6 +25,7 @@ package_id="d36d2d419030b7c335eeeb138fa43520a81a56326e4755083ba671c1a2063e76"
 class Templates:
     User = f"{package_id}:User:User"
     Alias = f"{package_id}:Alias:Alias"
+    Notification = f"{package_id}:Notification:Notification"
 
 async def main():
     logging.info("Starting up bot...")
@@ -52,11 +53,29 @@ async def main():
             # The Boundary can be helpful helpful when starting a stream on ledger that already has data,
             # since the stream will stream the current state of the ledger. The boundary event has an 'offset'
             # parameter that can be passed to 'conn.stream_many' and only begin the stream from that point
+            commands = []
 
-             async for event in stream.events():
-                if isinstance(event, CreateEvent):
-                    logging.info(f"Noticed a {event.contract_id.value_type} contract: {event.payload}")
-                elif isinstance(event, ArchiveEvent):
-                     logging.info(f"Noticed that a {event.contract_id.value_type} contract was deleted")
-                elif isinstance(event, Boundary):
-                    logging.info(f"Up to date on the current state of the ledger at offset: {event.offset}")
+            async for event in stream.items():
+               if isinstance(event, CreateEvent):
+                   logging.info(f"Noticed a {event.contract_id.value_type} contract: {event.payload}")
+
+                   # When the contract that was of the Notification template is created, automatically exercise the "Acknowledge" choice
+                   if str(event.contract_id.value_type) == Templates.Notification:
+                       commands.append(ExerciseCommand(event.contract_id, "Acknowledge", {}))
+                       await conn.exercise(event.contract_id, "Acknowledge", {})
+
+               elif isinstance(event, ArchiveEvent):
+                    logging.info(f"Noticed that a {event.contract_id.value_type} contract was deleted")
+               elif isinstance(event, Boundary):
+                   logging.info(f"Up to date on the current state of the ledger at offset: {event.offset}")
+
+            await conn.submit(commands)
+
+        commands = []
+
+        # Query only `Notification` contracts and build a list of "Acknowledge" commands
+        async with conn.query(Templates.Notification) as stream:
+            async for event in stream.creates():
+                commands.append(ExerciseCommand(event.contract_id, "Acknowledge", {}))
+
+        await conn.submit(commands)
