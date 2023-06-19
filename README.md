@@ -6,18 +6,18 @@ Note that the Daml model in `example-model` is for reference and does not need t
 
 ### To build
 
-```
+```sh
 make all
 ```
 
-Running this will use [poetry](https://python-poetry.org/docs/#installing-with-the-official-installer) to build and package a `.tar.gz` file with the bot. It will then copy the file with the correct version and name (as set in the `Makefile`).
+Running this will use [poetry](https://python-poetry.org/docs/#installing-with-the-official-installer) to build and package a `.tar.gz` file with the bot. It will then copy the file with the correct version and name (as set in the `Makefile`) into the root directory - the `.tar.gz` file is what will be uploaded to Daml Hub to run the automation.
 
 ### To run locally
 
-```
+```sh
 DAML_LEDGER_PARTY="party::1234" poetry run python3 -m bot
 ```
-Since `localhost:6865` is set as a default, you do not need to set the ledger URL, however `DAML_LEDGER_PARTY` must be set to a party that is allocated on the Daml ledger you are testing with - which will always be slightly different on Canton ledgers due to fingerprinting. `run_local.sh` can be used to dynamically fetch the `Alice` party and start the bot with it.
+Since `localhost:6865` is set as a default, you do not need to set the ledger URL, however `DAML_LEDGER_PARTY` must be set to a party that is allocated on the Daml ledger you are testing with - which will always be slightly different on Canton ledgers due to the particpant ID. `run_local.sh` can be used to dynamically fetch the `Alice` party and start the bot with it.
 
 ## Structure
 A Hub Python Automation should always be a module named `bot` as it is run on Hub with `python3 -m bot`.
@@ -96,32 +96,34 @@ The Package ID of a dar can be found by running `daml damlc -- inspect /path/to/
 
 After defining the templates, the example bot in this repository sets up a stream that runs forever, and sends a log message when a contract is created or deleted, or when the stream has reached the current state of the ledger. If the contract that was created was a Notification, it will automatically exercise the `Acknowledge` choice:
 ```python
-    # Start up a dazl connection
-    async with connect(url=url, act_as=Party(party)) as conn:
+# Start up a dazl connection
+async with connect(url=url, act_as=Party(party)) as conn:
 
-        # Stream both of our templates forever
-        async with conn.stream_many([Templates.User, Templates.Alias, Templates.Notification]) as stream:
-             async for event in stream.events():
-                if isinstance(event, CreateEvent):
-                    logging.info(f"Noticed a {event.contract_id.value_type} contract: {event.payload}")
+    # Stream all of our templates forever
+    async with conn.stream_many([Templates.User, Templates.Alias, Templates.Notification]) as stream:
+         async for event in stream.items():
 
-                    if str(event.contract_id.value_type) == Templates.Notification:
-                        await conn.exercise(event.contract_id, "Acknowledge", {})
+            if isinstance(event, CreateEvent):
+                logging.info(f"Noticed a {event.contract_id.value_type} contract: {event.payload}")
 
-                elif isinstance(event, ArchiveEvent):
-                     logging.info(f"Noticed that a {event.contract_id.value_type} contract was deleted")
-                elif isinstance(event, Boundary):
-                    logging.info(f"Up to date on the current state of the ledger at offset: {event.offset}")
+                if str(event.contract_id.value_type) == Templates.Notification:
+                    await conn.exercise(event.contract_id, "Acknowledge", {})
+
+            elif isinstance(event, ArchiveEvent):
+                 logging.info(f"Noticed that a {event.contract_id.value_type} contract was deleted")
+
+            elif isinstance(event, Boundary):
+                logging.info(f"Up to date on the current state of the ledger at offset: {event.offset}")
 ```
 
-`stream.events()` will yield a `CreateEvent` when a contract is created, `ArchiveEvent` when a contract is archived, and a `Boundary` event once the stream has caught up to the current end of the ledger.
+`stream.items()` will yield a `CreateEvent` when a contract is created, `ArchiveEvent` when a contract is archived, and a `Boundary` event once the stream has caught up to the current end of the ledger.
 
 The `Boundary` can be helpful helpful when starting a stream on ledger that already has data, since the stream will stream the current state of the ledger. The boundary event has an `offset` parameter that can be passed to `conn.stream_many` and only begin the stream from that point.
 
 `conn.exercise` was used in this example, but `create_and_exercise`, `exercise_by_key` and `create` commands are also available.
 
 ### Query
-`dazl` also  has `query`/`query_many` which will continue the program once the query finished instead of continuing to stream. Commands can also be defined and later submitted together with other commands as a single transaction. The following example queries for all current `Notification` templates, then submits all Acknowledge commands together:
+`dazl` also  has `query`/`query_many` which will continue the program once the query is finished instead of continuing to stream. Commands can also be defined and later submitted together with other commands as a single transaction. The following example queries for all current `Notification` templates, then submits all Acknowledge commands together:
 ```python
 
 
