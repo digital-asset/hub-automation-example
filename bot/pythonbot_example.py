@@ -1,26 +1,20 @@
 import logging
 import os
 
-from aiohttp import web
 
+import dazl
 from dazl import connect
-from dazl.ledger.aio import Connection
 from dazl.ledger import CreateEvent, ArchiveEvent, Boundary
 from dazl.prim import Party
 
-import random
-import string
-import sys
-import time
-import dazl
-from dazl import create, exercise, exercise_by_key
-from prometheus_client import Counter
 
 dazl.setup_default_logger(logging.INFO)
 
-# This is the Package ID of the dar we want to follow contracts from
-# While it is not strictly necessary, it is helpful to avoid this bot
-# reacting to templates from models that we are not interested in that
+# This is the Package ID of the dar we want to follow contracts from.
+
+# If this is not included, Dazl will stream _all_ templates that have the same name.
+# Speifying exactly which package ID to use will make the bot not react to templates
+# from models that are on the ledger that we are not interested in that
 # may have the same template name, especially older versions of a model.
 
 # This can be found by running `daml damlc -- inspect /path/to/dar | grep "package"`
@@ -36,7 +30,7 @@ async def main():
     logging.info("Starting up bot...")
 
     # These environment variables will always be set in a pythonbot running in hub, but adding defaults
-    # here can be useful for local running or making the typechecker happy
+    # here can be useful for running locally or making a typechecker happy
 
     # The URL path to the ledger you would like to connect to
     url = os.getenv('DAML_LEDGER_URL') or "localhost:6865"
