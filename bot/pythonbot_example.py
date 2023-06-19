@@ -44,7 +44,7 @@ async def main():
     async with connect(url=url, act_as=Party(party)) as conn:
 
         # Stream both of our templates forever
-        async with conn.stream_many([Templates.User, Templates.Alias]) as stream:
+        async with conn.stream_many([Templates.User, Templates.Alias, Templates.Notification]) as stream:
 
             # stream.events() will yield 'CreateEvent's when a contract is created, 'ArchiveEvent's
             # when a contract is archived and 'Boundary' events once the stream has caught up to the current
@@ -53,7 +53,6 @@ async def main():
             # The Boundary can be helpful helpful when starting a stream on ledger that already has data,
             # since the stream will stream the current state of the ledger. The boundary event has an 'offset'
             # parameter that can be passed to 'conn.stream_many' and only begin the stream from that point
-            commands = []
 
             async for event in stream.items():
                if isinstance(event, CreateEvent):
@@ -61,21 +60,9 @@ async def main():
 
                    # When the contract that was of the Notification template is created, automatically exercise the "Acknowledge" choice
                    if str(event.contract_id.value_type) == Templates.Notification:
-                       commands.append(ExerciseCommand(event.contract_id, "Acknowledge", {}))
                        await conn.exercise(event.contract_id, "Acknowledge", {})
 
                elif isinstance(event, ArchiveEvent):
                     logging.info(f"Noticed that a {event.contract_id.value_type} contract was deleted")
                elif isinstance(event, Boundary):
                    logging.info(f"Up to date on the current state of the ledger at offset: {event.offset}")
-
-            await conn.submit(commands)
-
-        commands = []
-
-        # Query only `Notification` contracts and build a list of "Acknowledge" commands
-        async with conn.query(Templates.Notification) as stream:
-            async for event in stream.creates():
-                commands.append(ExerciseCommand(event.contract_id, "Acknowledge", {}))
-
-        await conn.submit(commands)
