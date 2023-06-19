@@ -44,7 +44,7 @@ dazl = "^7.3.1"
 ├── pyproject.toml
 ```
 
-### ____init__.py__
+### `__init__.py`
 The file with the main portion of the code (here `pythonbot_example.py`) can have any name, but must be imported in `__init__.py` where the `main` function should be called. This file will be run when the bot is initialized:
 
 ```python
@@ -65,7 +65,7 @@ If you would like to accept traffic to that endpoint, you can run an `aiohttp` (
 ## Bot code
 Python Automation running in Daml Hub generally use the [Dazl library](https://github.com/digital-asset/dazl-client) to react to incoming Daml contracts.
 
-### Package IDs:
+### Package IDs
 Dazl recognizes template names in the format of `package_id:ModuleName.NestedModule:TemplateName`:
 
 ```python
@@ -81,7 +81,18 @@ The "Package ID" specifies the dar that we want to follow contracts from. If thi
 
 The Package ID of a dar can be found by running `daml damlc -- inspect /path/to/dar | grep "package"`
 
-### Main method:
+### Environment variables
+`dazl` requires a URL of the Daml ledger to connect to as well as a `Party` to act as. These wiill always be set as environment variables in Automations running in Daml Hub, but adding defaults can help with running locally.
+```
+    # The URL path to the ledger you would like to connect to
+    url = os.getenv('DAML_LEDGER_URL') or "localhost:6865"
+
+    # The party that is running the automation.
+    party = os.getenv('DAML_LEDGER_PARTY') or "party"
+```
+`DAML_LEDGER_PARTY` will be set as the party specified when deploying the automation. Note that this party will _only_ be able to see and operate on contracts that this party has access to via signatory or observer!
+
+### Stream
 
 After defining the templates, the example bot in this repository sets up a stream that runs forever, and sends a log message when a contract is created or deleted, or when the stream has reached the current state of the ledger. If the contract that was created was a Notification, it will automatically exercise the `Acknowledge` choice:
 ```python
@@ -109,6 +120,7 @@ The `Boundary` can be helpful helpful when starting a stream on ledger that alre
 
 `conn.exercise` was used in this example, but `create_and_exercise`, `exercise_by_key` and `create` commands are also available.
 
+### Query
 `dazl` also  has `query`/`query_many` which will continue the program once the query is through instead of continuing to stream. Commands can also be defined and later submitted together with other commands as a single transaction. The following example queries for all current `Notification` templates, then submits all Acknowledge commands together:
 ```python
 
