@@ -145,7 +145,7 @@ in mind that it is provided for illustrative purposes only, and as such may not
 be production quality and/or may not fit your use-cases. You may use the
 contents of this repo in parts or in whole according to the BSD0 license:**
 
-> Copyright © 2022 Digital Asset (Switzerland) GmbH and/or its affiliates
+> Copyright © 2023 Digital Asset (Switzerland) GmbH and/or its affiliates
 >
 > Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
 >
