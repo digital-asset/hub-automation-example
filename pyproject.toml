@@ -1,3 +1,6 @@
+# Copyright (c) 2023 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+# SPDX-License-Identifier: BD0
+
 [tool.poetry]
 name = "bot"
 version = "0.1.0"
@@ -5,7 +8,7 @@ description = "Example of a Daml Hub Pythonbot"
 authors = ["Digital Asset"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9"
 dazl = "^7.3.1"
 aiohttp = "^3.6.2"
 prometheus-client = "^0.15.0"

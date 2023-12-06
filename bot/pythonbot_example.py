@@ -1,6 +1,8 @@
+# Copyright (c) 2023 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+# SPDX-License-Identifier: BD0
+
 import logging
 import os
-
 
 import dazl
 from dazl import connect

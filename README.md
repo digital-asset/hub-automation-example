@@ -1,3 +1,5 @@
+Copyright (c) 2023 Digital Asset (Switzerland) GmbH and/or its affiliates. All Rights Reserved. SPDX-License-Identifier: BD0
+
 # Example Python Bot
 
 This repository has a simple skeleton example of a Python Automation that can be run in Daml Hub. This can be copied and then adjusted to your application.
@@ -17,7 +19,7 @@ Running this will use [poetry](https://python-poetry.org/docs/#installing-with-t
 ```sh
 DAML_LEDGER_PARTY="party::1234" poetry run python3 -m bot
 ```
-Since `localhost:6865` is set as a default, you do not need to set the ledger URL, however `DAML_LEDGER_PARTY` must be set to a party that is allocated on the Daml ledger you are testing with - which will always be slightly different on Canton ledgers due to the particpant ID. `run_local.sh` can be used to dynamically fetch the `Alice` party and start the bot with it.
+Since `localhost:6865` is set as a default, you do not need to set the ledger URL, however `DAML_LEDGER_PARTY` must be set to a party that is allocated on the Daml ledger you are testing with - which will always be slightly different on Canton ledgers due to the participant ID. `run_local.sh` can be used to dynamically fetch the `Alice` party and start the bot with it.
 
 ## Structure
 A Hub Python Automation should always be a module named `bot` as it is run on Hub with `python3 -m bot`.
@@ -31,7 +33,7 @@ description = "Example of a Daml Hub Python Automationo"
 authors = ["Digital Asset"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9"
 dazl = "^7.3.1"
 ```
 
