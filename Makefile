@@ -1,3 +1,6 @@
+# Copyright (c) 2022 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
+# SPDX-License-Identifier: BD0
+
 VERSION := $(shell grep version pyproject.toml | head -n 1 | awk -F\" '{print $$2}')
 BUILD_OUTPUT := dist/bot-$(VERSION).tar.gz
 
