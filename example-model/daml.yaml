@@ -1,4 +1,4 @@
-sdk-version: 2.7
+sdk-version: 2.7.5
 name: example-model
 version: 0.1.0
 source: daml
