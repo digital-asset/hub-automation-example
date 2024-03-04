@@ -1,2 +1,8 @@
 dist/
 __pycache__/
+
+# intellij
+.idea
+
+# maven build files
+target

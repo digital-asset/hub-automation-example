@@ -1,4 +1,4 @@
-Copyright (c) 2023 Digital Asset (Switzerland) GmbH and/or its affiliates. All Rights Reserved. SPDX-License-Identifier: 0BSD
+Copyright (c) 2024 Digital Asset (Switzerland) GmbH and/or its affiliates. All Rights Reserved. SPDX-License-Identifier: 0BSD
 
 # Sample code
 
@@ -7,7 +7,7 @@ in mind that it is provided for illustrative purposes only, and as such may not
 be production quality and/or may not fit your use-cases. You may use the
 contents of this repo in parts or in whole according to the BSD0 license:**
 
-> Copyright © 2023 Digital Asset (Switzerland) GmbH and/or its affiliates
+> Copyright © 2024 Digital Asset (Switzerland) GmbH and/or its affiliates
 >
 > Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
 >
@@ -101,11 +101,12 @@ The Package ID of a dar can be found by running `daml damlc -- inspect /path/to/
 ### Environment variables
 `dazl` requires a URL of the Daml ledger to connect to as well as a `Party` to act as. These wiill always be set as environment variables in Automations running in Daml Hub, but adding defaults can help with running locally.
 ```python
-    # The URL path to the ledger you would like to connect to
-    url = os.getenv('DAML_LEDGER_URL') or "localhost:6865"
+import os
+# The URL path to the ledger you would like to connect to
+url = os.getenv('DAML_LEDGER_URL') or "localhost:6865"
 
-    # The party that is running the automation.
-    party = os.getenv('DAML_LEDGER_PARTY') or "party"
+# The party that is running the automation.
+party = os.getenv('DAML_LEDGER_PARTY') or "party"
 ```
 `DAML_LEDGER_PARTY` will be set as the party specified when deploying the automation. Note that this party will _only_ be able to see and operate on contracts that this party has access to via signatory or observer!
 
@@ -113,6 +114,11 @@ The Package ID of a dar can be found by running `daml damlc -- inspect /path/to/
 
 After defining the templates, the example bot in this repository sets up a stream that runs forever, and sends a log message when a contract is created or deleted, or when the stream has reached the current state of the ledger. If the contract that was created was a Notification, it will automatically exercise the `Acknowledge` choice:
 ```python
+import dazl
+from dazl import connect
+from dazl.ledger import CreateEvent, ArchiveEvent, Boundary, ExerciseCommand
+from dazl.prim import Party
+
 # Start up a dazl connection
 async with connect(url=url, act_as=Party(party)) as conn:
 
