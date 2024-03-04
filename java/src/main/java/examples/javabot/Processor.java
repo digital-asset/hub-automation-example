@@ -15,8 +15,7 @@ import com.daml.ledger.javaapi.data.codegen.ContractCompanion;
 import com.daml.ledger.javaapi.data.codegen.Exercised;
 import com.daml.ledger.javaapi.data.codegen.Update;
 
-import examples.javabot.codegen.main.JavabotRequest;
-import examples.javabot.codegen.main.JavabotResponse;
+import examples.javabot.codegen.user.Notification;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 
@@ -48,7 +47,7 @@ public class Processor {
         this.ledgerId = ledgerId;
         this.transactionService = TransactionServiceGrpc.newStub(channel);
         this.submissionService = CommandSubmissionServiceGrpc.newBlockingStub(channel);
-        this.requestIdentifier = JavabotRequest.TEMPLATE_ID;
+        this.requestIdentifier = Notification.TEMPLATE_ID;
         this.appId = appId;
     }
 
@@ -126,15 +125,15 @@ public class Processor {
      */
     private Stream<Command> processEvent(String workflowId, EventOuterClass.CreatedEvent protoEvent) {
         String contractId = protoEvent.getContractId();
-        String choice = "JavabotRequest_Accept";
+        String choice = "Acknowledge";
 
         System.out.printf("%s is exercising %s on %s in workflow %s at count\n", party, choice, contractId, workflowId);
 
         final var event = CreatedEvent.fromProto(protoEvent);
 
         return  processRequest(
-                        JavabotRequest.COMPANION,
-                        JavabotRequest.Exercises::exerciseJavabotRequest_Accept,
+                        Notification.COMPANION,
+                        Notification.Exercises::exerciseAcknowledge,
                         event);
 
     }
@@ -142,12 +141,12 @@ public class Processor {
     private <Ct extends Contract<Id, Data>, Id, Data>
         Stream<Command> processRequest(
                 ContractCompanion<Ct, Id, Data> companion,
-                Function<Id, Update<Exercised<JavabotResponse.ContractId>>> createUpdate,
+                Function<Id, Update<Exercised<Unit>>> createUpdate,
                 CreatedEvent event) {
             if (!event.getTemplateId().getEntityName().equals(companion.TEMPLATE_ID.getEntityName()))
                 return Stream.empty();
             Ct ct = companion.fromCreatedEvent(event);
-            Update<Exercised<JavabotResponse.ContractId>> update = createUpdate.apply(ct.id);
+            Update<Exercised<Unit>> update = createUpdate.apply(ct.id);
             return update.commands().stream();
         }
 }

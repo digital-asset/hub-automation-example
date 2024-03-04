@@ -19,15 +19,18 @@ contents of this repo in parts or in whole according to the BSD0 license:**
 
 This repository has a simple skeleton example of a Jvm Automations that can be run in Daml Hub. This can be copied and then adjusted to your application.
 
-Note that the Daml model in `example-model` is for reference and does not need to be copied when using this code as a template.
+The Daml model in `example-model` has its templates generated into the source code via `daml codegen` - you can either build a model from this example or replace the
+codegen and model with your own.
+
+For more examples of how to use the Daml Java Bindings, please refer to https://github.com/digital-asset/ex-java-bindings.
 
 ### To build
 
 ```sh
-  mvn install
+  make all
 ```
 
-Running this will use [maven](https://maven.apache.org/install.html) to build and package a `.tar.gz` file with the bot. It will then copy the file with the correct version and name (as set in the `Makefile`) into the root directory - the `.tar.gz` file is what will be uploaded to Daml Hub to run the automation.
+Running this will use [maven](https://maven.apache.org/install.html) to build and package a 'fat' `.jar` file with the bot. It will then copy the file with the correct version and name (as set in the `Makefile`) into the root directory - the `.jar` file is what will be uploaded to Daml Hub to run the automation.
 
 ### To run locally
 
@@ -52,50 +55,37 @@ Running this will use [maven](https://maven.apache.org/install.html) to build an
 ```java
 ```
 
+## Configuration
+
+For configuration of an automation that may differ from deployment to deployment, a configuration file can be uploaded when the automation is deployed.
+
+This configuration can be of any type, for example `.json`, `.toml`, `.yaml`.
+
+To access this configuration file from the automation, the environment variable `CONFIG_FILE` is set that will point to a location on the volume where the configuration file is stored. This can then be read by the automation and parsed based on what type of file was uploaded.
+
+For example if a JSON file was uploaded:
+```java
+        try {
+            String configFilePath = System.getenv("CONFIG_FILE");
+            String configContent = Files.readString(Paths.get(configFilePath));
+            JSONObject config = new JSONObject(configContent);
+
+            System.out.println("configFilePath: " + configFilePath);
+            System.out.println("configFileContents" + config.toString());
+
+        } catch (IOException | JSONException e) {
+            // Catch any file read or JSON parsing errors in case the argument JSON file wasn't uploaded.
+            e.printStackTrace();
+        }
+```
+
 ## External Connectivity
 Jvm Automations running on ledgers owned by Enterprise users can connect to services running on the internet outside of Daml Hub. The outgoing IP address is dynamically set.
 
 For incoming connections, Daml Hub provides a webhook URL of`http://{ledgerId}.daml.app/automation/{instanceId}/`. This link can be copied from the Status Page for the running instance.
 
-If you would like to accept traffic to that endpoint, you can run a webserver (such as with `aiohttp`) running on the default `0.0.0.0:8080`. A request pointed directly to the webhook URL will be routed to the root `/` of your server.
+If you would like to accept traffic to that endpoint, you can run a webserver running on the default `0.0.0.0:8080`. A request pointed directly to the webhook URL will be routed to the root `/` of your server.
 
 
 ## Bot code
-Jvm Automations running in Daml Hub generally use the [Dazl library](https://github.com/digital-asset/dazl-client) to react to incoming Daml contracts.
-
-### Package IDs
-Dazl recognizes template names in the format of `package_id:ModuleName.NestedModule:TemplateName`:
-
-```java
-```
-The "Package ID" is the unique identifier of the dar that we want to follow contracts from. If this is not included, Dazl will stream _all_ templates that have the same name. Including the package ID will ensure that the bot only reacts to template from the Daml model that was specified. This is particularly important when a new version of a Daml model is uploaded to the ledger, since the names of the templates may remain the same.
-
-The Package ID of a dar can be found by running `daml damlc -- inspect /path/to/dar | grep "package"`
-
-### Environment variables
-`dazl` requires a URL of the Daml ledger to connect to as well as a `Party` to act as. These wiill always be set as environment variables in Automations running in Daml Hub, but adding defaults can help with running locally.
-```java
-
-```
-`DAML_LEDGER_PARTY` will be set as the party specified when deploying the automation. Note that this party will _only_ be able to see and operate on contracts that this party has access to via signatory or observer!
-
-### Stream
-
-After defining the templates, the example bot in this repository sets up a stream that runs forever, and sends a log message when a contract is created or deleted, or when the stream has reached the current state of the ledger. If the contract that was created was a Notification, it will automatically exercise the `Acknowledge` choice:
-```java
-
-```
-
-`stream.items()` will yield a `CreateEvent` when a contract is created, `ArchiveEvent` when a contract is archived, and a `Boundary` event once the stream has caught up to the current end of the ledger.
-
-The `Boundary` can be helpful helpful when starting a stream on ledger that already has data, since the stream will stream the current state of the ledger. The boundary event has an `offset` parameter that can be passed to `conn.stream_many` and only begin the stream from that point.
-
-`conn.exercise` was used in this example, but `create_and_exercise`, `exercise_by_key` and `create` commands are also available.
-
-### Query
-`dazl` also  has `query`/`query_many` which will continue the program once the query is finished instead of continuing to stream. Commands can also be defined and later submitted together with other commands as a single transaction. The following example queries for all current `Notification` templates, then submits all Acknowledge commands together:
-```java
-
-
-
-```
+Jvm Automations running in Daml Hub generally use the [Daml Java Bindings](https://docs.daml.com/app-dev/bindings-java/index.html#java-bindings) to react to incoming Daml contracts.

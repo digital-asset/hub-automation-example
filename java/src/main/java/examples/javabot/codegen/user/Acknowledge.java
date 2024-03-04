@@ -1,4 +1,4 @@
-package examples.javabot.codegen.main;
+package examples.javabot.codegen.user;
 
 import com.daml.ledger.javaapi.data.Value;
 import com.daml.ledger.javaapi.data.codegen.DamlRecord;
@@ -13,26 +13,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class Trigger_Accept extends DamlRecord<Trigger_Accept> {
-  public static final String _packageId = "df8b295b9fd9aa17cdd586d85b456649a31323ebcad45a7ddef6885e90e8b2d7";
+public class Acknowledge extends DamlRecord<Acknowledge> {
+  public static final String _packageId = "2e0159bf1cf8111e91e1a6049bc23ec527b4bc0d91efc72482c36dd1fe4fe073";
 
-  public Trigger_Accept() {
+  public Acknowledge() {
   }
 
   /**
    * @deprecated since Daml 2.5.0; use {@code valueDecoder} instead
    */
   @Deprecated
-  public static Trigger_Accept fromValue(Value value$) throws IllegalArgumentException {
+  public static Acknowledge fromValue(Value value$) throws IllegalArgumentException {
     return valueDecoder().decode(value$);
   }
 
-  public static ValueDecoder<Trigger_Accept> valueDecoder() throws IllegalArgumentException {
+  public static ValueDecoder<Acknowledge> valueDecoder() throws IllegalArgumentException {
     return value$ -> {
       Value recordValue$ = value$;
       List<com.daml.ledger.javaapi.data.DamlRecord.Field> fields$ = PrimitiveValueDecoders.recordCheck(0,
           recordValue$);
-      return new Trigger_Accept();
+      return new Acknowledge();
     } ;
   }
 
@@ -49,7 +49,7 @@ public class Trigger_Accept extends DamlRecord<Trigger_Accept> {
     if (object == null) {
       return false;
     }
-    if (!(object instanceof Trigger_Accept)) {
+    if (!(object instanceof Acknowledge)) {
       return false;
     }
     return true;
@@ -62,6 +62,6 @@ public class Trigger_Accept extends DamlRecord<Trigger_Accept> {
 
   @Override
   public String toString() {
-    return "examples.javabot.codegen.main.Trigger_Accept";
+    return "examples.javabot.codegen.user.Acknowledge";
   }
 }

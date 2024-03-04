@@ -9,3 +9,7 @@ dependencies:
 start-navigator: true
 # Remove this line when running against a ledger without user management.
 init-script: Setup:setup
+codegen:
+  java:
+    package-prefix: examples.javabot.codegen
+    output-directory: ../java/src/main/java/
