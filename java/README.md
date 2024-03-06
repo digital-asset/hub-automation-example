@@ -43,8 +43,7 @@ Running this will use [maven](https://maven.apache.org/install.html) to build an
 
 
 ### pom.xml
-```toml
-```
+https://github.com/digital-asset/hub-pythonbot-example/blob/51b05c41849dc98b821cc3a1244b0235f3bc0339/java/pom.xml#L1-L89
 
 ### Directory Structure
 ```
