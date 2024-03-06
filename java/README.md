@@ -48,11 +48,63 @@ Running this will use [maven](https://maven.apache.org/install.html) to build an
 
 ### Directory Structure
 ```
+├── Makefile
+├── README.md
+├── log
+│   ├── canton.log
+│   └── canton_errors.log
+├── pom.xml
+├── run_local.sh
+├── src
+│   └── main
+│       ├── java
+│       │   └── examples
+│       │       └── javabot
+│       │           ├── Main.java
+│       │           ├── Processor.java
+│       │           └── codegen
+│       │               ├── da
+│       │               │   ├── internal
+│       │               │   │   └── template
+│       │               │   │       └── Archive.java
+│       │               │   └── types
+│       │               │       └── Tuple2.java
+│       │               ├── main
+│       │               │   ├── JavabotRequest.java
+│       │               │   ├── JavabotRequest_Accept.java
+│       │               │   ├── JavabotResponse.java
+│       │               │   ├── PythonbotRequest.java
+│       │               │   ├── PythonbotResponse.java
+│       │               │   ├── Pythonbot_Accept.java
+│       │               │   ├── TriggerRequest.java
+│       │               │   ├── TriggerResponse.java
+│       │               │   └── Trigger_Accept.java
+│       │               └── user
+│       │                   ├── Acknowledge.java
+│       │                   ├── Alias.java
+│       │                   ├── Change.java
+│       │                   ├── Follow.java
+│       │                   ├── Notification.java
+│       │                   └── User.java
+│       └── resources
+│           └── logback.xml
 ```
 
-### `__init__.py`
+### `main`
 
 ```java
+public class Main {
+
+    public static void main(String[] args) {
+
+        String appId = System.getenv("DAML_APPLICATION_ID");
+        String ledgerId = System.getenv("DAML_LEDGER_ID");
+        String userId = System.getenv("DAML_USER_ID");
+        String url[] = System.getenv("DAML_LEDGER_URL").split(":");
+        String host = url[0];
+        int port = Integer.parseInt(url[1]);
+    }
+}
 ```
 
 ## Configuration
