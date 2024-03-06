@@ -22,7 +22,7 @@ public class Main {
 
     public static void main(String[] args) {
 
-        String appId = System.getenv("DAML_LEDGER_APPLICATION_NAME");
+        String appId = System.getenv("DAML_APPLICATION_ID");
         String ledgerId = System.getenv("DAML_LEDGER_ID");
         String userId = System.getenv("DAML_USER_ID");
         String url[] = System.getenv("DAML_LEDGER_URL").split(":");
