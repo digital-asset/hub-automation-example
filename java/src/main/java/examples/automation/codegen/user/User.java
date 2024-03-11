@@ -1,4 +1,6 @@
-package examples.javabot.codegen.user;
+package examples.automation.codegen.user;
+
+import static com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoders.apply;
 
 import com.daml.ledger.javaapi.data.ContractFilter;
 import com.daml.ledger.javaapi.data.CreateAndExerciseCommand;
@@ -22,33 +24,39 @@ import com.daml.ledger.javaapi.data.codegen.Exercised;
 import com.daml.ledger.javaapi.data.codegen.PrimitiveValueDecoders;
 import com.daml.ledger.javaapi.data.codegen.Update;
 import com.daml.ledger.javaapi.data.codegen.ValueDecoder;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoder;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoder;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoders;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfReader;
 import java.lang.Deprecated;
 import java.lang.IllegalArgumentException;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 public final class User extends Template {
-  public static final Identifier TEMPLATE_ID = new Identifier("2e0159bf1cf8111e91e1a6049bc23ec527b4bc0d91efc72482c36dd1fe4fe073", "User", "User");
+  public static final Identifier TEMPLATE_ID = new Identifier("47c7c0470a13a318301073df684c2e4450fd5d31b1d86ccc207fdda12d17343a", "User", "User");
 
   public static final Choice<User, Follow, ContractId> CHOICE_Follow = 
       Choice.create("Follow", value$ -> value$.toValue(), value$ -> Follow.valueDecoder()
         .decode(value$), value$ ->
         new ContractId(value$.asContractId().orElseThrow(() -> new IllegalArgumentException("Expected value$ to be of type com.daml.ledger.javaapi.data.ContractId")).getValue()));
 
-  public static final Choice<User, examples.javabot.codegen.da.internal.template.Archive, Unit> CHOICE_Archive = 
+  public static final Choice<User, examples.automation.codegen.da.internal.template.Archive, Unit> CHOICE_Archive = 
       Choice.create("Archive", value$ -> value$.toValue(), value$ ->
-        examples.javabot.codegen.da.internal.template.Archive.valueDecoder().decode(value$),
+        examples.automation.codegen.da.internal.template.Archive.valueDecoder().decode(value$),
         value$ -> PrimitiveValueDecoders.fromUnit.decode(value$));
 
   public static final ContractCompanion.WithKey<Contract, ContractId, User, String> COMPANION = 
-      new ContractCompanion.WithKey<>("examples.javabot.codegen.user.User", TEMPLATE_ID,
-        ContractId::new, v -> User.templateValueDecoder().decode(v), Contract::new,
+      new ContractCompanion.WithKey<>("examples.automation.codegen.user.User", TEMPLATE_ID,
+        ContractId::new, v -> User.templateValueDecoder().decode(v), User::fromJson, Contract::new,
         List.of(CHOICE_Follow, CHOICE_Archive), e -> PrimitiveValueDecoders.fromParty.decode(e));
 
   public final String username;
@@ -86,7 +94,7 @@ public final class User extends Template {
    */
   @Deprecated
   public static Update<Exercised<Unit>> exerciseByKeyArchive(String key,
-      examples.javabot.codegen.da.internal.template.Archive arg) {
+      examples.automation.codegen.da.internal.template.Archive arg) {
     return byKey(key).exerciseArchive(arg);
   }
 
@@ -119,7 +127,7 @@ public final class User extends Template {
    */
   @Deprecated
   public Update<Exercised<Unit>> createAndExerciseArchive(
-      examples.javabot.codegen.da.internal.template.Archive arg) {
+      examples.automation.codegen.da.internal.template.Archive arg) {
     return createAnd().exerciseArchive(arg);
   }
 
@@ -128,7 +136,7 @@ public final class User extends Template {
    */
   @Deprecated
   public Update<Exercised<Unit>> createAndExerciseArchive() {
-    return createAndExerciseArchive(new examples.javabot.codegen.da.internal.template.Archive());
+    return createAndExerciseArchive(new examples.automation.codegen.da.internal.template.Archive());
   }
 
   public static Update<Created<ContractId>> create(String username, List<String> following) {
@@ -167,12 +175,33 @@ public final class User extends Template {
   private static ValueDecoder<User> templateValueDecoder() throws IllegalArgumentException {
     return value$ -> {
       Value recordValue$ = value$;
-      List<DamlRecord.Field> fields$ = PrimitiveValueDecoders.recordCheck(2, recordValue$);
+      List<DamlRecord.Field> fields$ = PrimitiveValueDecoders.recordCheck(2,0, recordValue$);
       String username = PrimitiveValueDecoders.fromParty.decode(fields$.get(0).getValue());
       List<String> following = PrimitiveValueDecoders.fromList(PrimitiveValueDecoders.fromParty)
           .decode(fields$.get(1).getValue());
       return new User(username, following);
     } ;
+  }
+
+  public static JsonLfDecoder<User> jsonDecoder() {
+    return JsonLfDecoders.record(Arrays.asList("username", "following"), name -> {
+          switch (name) {
+            case "username": return com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.JavaArg.at(0, com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.party);
+            case "following": return com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.JavaArg.at(1, com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.list(com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.party));
+            default: return null;
+          }
+        }
+        , (Object[] args) -> new User(JsonLfDecoders.cast(args[0]), JsonLfDecoders.cast(args[1])));
+  }
+
+  public static User fromJson(String json) throws JsonLfDecoder.Error {
+    return jsonDecoder().decode(new JsonLfReader(json));
+  }
+
+  public JsonLfEncoder jsonEncoder() {
+    return JsonLfEncoders.record(
+        JsonLfEncoders.Field.of("username", apply(JsonLfEncoders::party, username)),
+        JsonLfEncoders.Field.of("following", apply(JsonLfEncoders.list(JsonLfEncoders::party), following)));
   }
 
   public static ContractFilter<Contract> contractFilter() {
@@ -202,7 +231,7 @@ public final class User extends Template {
 
   @Override
   public String toString() {
-    return String.format("examples.javabot.codegen.user.User(%s, %s)", this.username,
+    return String.format("examples.automation.codegen.user.User(%s, %s)", this.username,
         this.following);
   }
 
@@ -265,12 +294,12 @@ public final class User extends Template {
     }
 
     default Update<Exercised<Unit>> exerciseArchive(
-        examples.javabot.codegen.da.internal.template.Archive arg) {
+        examples.automation.codegen.da.internal.template.Archive arg) {
       return makeExerciseCmd(CHOICE_Archive, arg);
     }
 
     default Update<Exercised<Unit>> exerciseArchive() {
-      return exerciseArchive(new examples.javabot.codegen.da.internal.template.Archive());
+      return exerciseArchive(new examples.automation.codegen.da.internal.template.Archive());
     }
   }
 

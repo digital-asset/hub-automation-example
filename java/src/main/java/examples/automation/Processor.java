@@ -1,7 +1,7 @@
 // Copyright (c) 2023 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package examples.javabot;
+package examples.automation;
 
 import com.daml.ledger.api.v1.*;
 import com.daml.ledger.api.v1.CommandSubmissionServiceGrpc.CommandSubmissionServiceBlockingStub;
@@ -15,7 +15,8 @@ import com.daml.ledger.javaapi.data.codegen.ContractCompanion;
 import com.daml.ledger.javaapi.data.codegen.Exercised;
 import com.daml.ledger.javaapi.data.codegen.Update;
 
-import examples.javabot.codegen.user.Notification;
+import com.google.protobuf.Empty;
+import examples.automation.codegen.user.Notification;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 
@@ -24,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -31,6 +34,7 @@ import java.util.stream.Stream;
  * This class subscribes to the stream of transactions for a given party and reacts to Ping or Pong contracts.
  */
 public class Processor {
+    private final static Logger LOGGER = Logger.getLogger(Processor.class.getName());
 
     private final String party;
     private final String ledgerId;
@@ -56,16 +60,7 @@ public class Processor {
         final var inclusiveFilter = InclusiveFilter
                 .ofTemplateIds(Set.of(requestIdentifier));
         // specify inclusive filter for the party attached to this processor
-        final var filtersByParty = new FiltersByParty(Map.of(party, inclusiveFilter));
-
-        // assemble the request for the transaction stream
-        // NOTE: This will only respond to contracts created _after_ the bot was started
-        final var getTransactionsRequest = new GetTransactionsRequest(
-                ledgerId,
-                LedgerOffset.LedgerEnd.getInstance(),
-                filtersByParty,
-                true
-        );
+        final var getTransactionsRequest = getGetTransactionsRequest(inclusiveFilter);
 
         // this StreamObserver reacts to transactions and prints a message if an error occurs or the stream gets closed
         StreamObserver<GetTransactionsResponse> transactionObserver = new StreamObserver<>() {
@@ -77,7 +72,7 @@ public class Processor {
             @Override
             public void onError(Throwable t) {
                 System.err.printf("%s encountered an error while processing transactions!\n", party);
-                t.printStackTrace();
+                LOGGER.log( Level.SEVERE, t.toString(), t );
                 System.exit(0);
             }
 
@@ -88,6 +83,19 @@ public class Processor {
         };
         System.out.printf("%s starts reading transactions.\n", party);
         transactionService.getTransactions(getTransactionsRequest.toProto(), transactionObserver);
+    }
+
+    private GetTransactionsRequest getGetTransactionsRequest(InclusiveFilter inclusiveFilter) {
+        final var filtersByParty = new FiltersByParty(Map.of(party, inclusiveFilter));
+
+        // assemble the request for the transaction stream
+        // NOTE: This will only respond to contracts created _after_ the bot was started
+        return new GetTransactionsRequest(
+                ledgerId,
+                LedgerOffset.LedgerEnd.getInstance(),
+                filtersByParty,
+                true
+        );
     }
 
     /**
@@ -109,20 +117,11 @@ public class Processor {
                     .withActAs(List.of(party))
                     .withReadAs(List.of(party))
                     .withWorkflowId(tx.getWorkflowId());
-            submissionService.submit(SubmitRequest.toProto(ledgerId, commandsSubmission));
+            Empty result = submissionService.submit(SubmitRequest.toProto(ledgerId, commandsSubmission));
+            LOGGER.info(result.toString());
         }
     }
 
-    /**
-     * For each {@link CreatedEvent} where the <code>receiver</code> is
-     * the current party, exercise the <code>Pong</code> choice of <code>Ping</code> contracts, or the <code>Ping</code>
-     * choice of <code>Pong</code> contracts.
-     *
-     * @param workflowId the workflow the event is part of
-     * @param protoEvent      the {@link CreatedEvent} to process
-     * @return an empty <code>Stream</code> if this event doesn't trigger any action for this {@link PingPongProcessor}'s
-     * party
-     */
     private Stream<Command> processEvent(String workflowId, EventOuterClass.CreatedEvent protoEvent) {
         String contractId = protoEvent.getContractId();
         String choice = "Acknowledge";

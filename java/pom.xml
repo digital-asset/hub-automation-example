@@ -2,8 +2,8 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.damlhub.javabot.test</groupId>
-    <artifactId>hub-example-javabot</artifactId>
+    <groupId>com.damlhub.automation.test</groupId>
+    <artifactId>hub-example-automation</artifactId>
     <packaging>jar</packaging>
     <version>0.0.1</version>
 
@@ -11,7 +11,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <sdk-version>2.7.0</sdk-version>
+        <sdk-version>2.8.3</sdk-version>
     </properties>
 
     <dependencies>
@@ -46,7 +46,7 @@
                  <archive>
                    <manifest>
                      <addClasspath>true</addClasspath>
-                     <mainClass>examples.javabot.Main</mainClass>
+                     <mainClass>examples.automation.Main</mainClass>
                    </manifest>
                  </archive>
                 <descriptorRefs>

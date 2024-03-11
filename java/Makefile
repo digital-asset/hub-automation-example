@@ -2,9 +2,9 @@
 # SPDX-License-Identifier: 0BSD
 
 VERSION := $(shell mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-BUILD_OUTPUT := target/hub-example-javabot-$(VERSION)-jar-with-dependencies.jar
+BUILD_OUTPUT := target/hub-example-automation-$(VERSION)-jar-with-dependencies.jar
 
-NAME := hub-example-javabot
+NAME := hub-example-automation
 
 TARGET := $(NAME)-$(VERSION).jar
 

@@ -15,7 +15,7 @@ contents of this repo in parts or in whole according to the BSD0 license:**
 
 > **This repository does not accept Pull Requests at the moment.**
 
-## Example JVM Bot
+## Example JVM Automation
 
 This repository has a simple skeleton example of a JVM automation that can be run in Daml Hub. This can be copied and then adjusted to your application.
 
@@ -30,12 +30,16 @@ For more examples of how to use the Daml Java Bindings, please refer to https://
   make all
 ```
 
-Running this will use [maven](https://maven.apache.org/install.html) to build and package a 'fat' `.jar` file with the bot. It will then copy the file with the correct version and name (as set in the `Makefile`) into the root directory - the `.jar` file is what will be uploaded to Daml Hub to run the automation.
+Running this will use [maven](https://maven.apache.org/install.html) to build and package a 'fat' `.jar` file with the automation. It will then copy the file with the correct version and name (as set in the `Makefile`) into the root directory - the `.jar` file is what will be uploaded to Daml Hub to run the automation.
 
 ### To run locally
 
 ```sh
+# start up a local sandbox
+daml sandbox
 
+# start up the jvm automation
+./run_local.sh
 ```
 
 
@@ -58,7 +62,7 @@ https://github.com/digital-asset/hub-pythonbot-example/blob/51b05c41849dc98b821c
 │   └── main
 │       ├── java
 │       │   └── examples
-│       │       └── javabot
+│       │       └── automation
 │       │           ├── Main.java
 │       │           ├── Processor.java
 │       │           └── codegen
@@ -69,15 +73,9 @@ https://github.com/digital-asset/hub-pythonbot-example/blob/51b05c41849dc98b821c
 │       │               │   └── types
 │       │               │       └── Tuple2.java
 │       │               ├── main
-│       │               │   ├── JavabotRequest.java
-│       │               │   ├── JavabotRequest_Accept.java
-│       │               │   ├── JavabotResponse.java
-│       │               │   ├── PythonbotRequest.java
-│       │               │   ├── PythonbotResponse.java
-│       │               │   ├── Pythonbot_Accept.java
-│       │               │   ├── TriggerRequest.java
-│       │               │   ├── TriggerResponse.java
-│       │               │   └── Trigger_Accept.java
+│       │               │   ├── JavaAutomationRequest.java
+│       │               │   ├── JavaAutomationRequest_Accept.java
+│       │               │   ├── JavaAutomationResponse.java
 │       │               └── user
 │       │                   ├── Acknowledge.java
 │       │                   ├── Alias.java
@@ -138,5 +136,5 @@ For incoming connections, Daml Hub provides a webhook URL of`http://{ledgerId}.d
 If you would like to accept traffic to that endpoint, you can run a webserver running on the default `0.0.0.0:8080`. A request pointed directly to the webhook URL will be routed to the root `/` of your server.
 
 
-## Bot Code
+## Automation Code
 JVM automations running on Daml Hub generally use the [Daml Java Bindings](https://docs.daml.com/app-dev/bindings-java/index.html#java-bindings) to react to incoming Daml contracts.

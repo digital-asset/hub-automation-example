@@ -1,21 +1,29 @@
-package examples.javabot.codegen.user;
+package examples.automation.codegen.user;
+
+import static com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoders.apply;
 
 import com.daml.ledger.javaapi.data.Text;
 import com.daml.ledger.javaapi.data.Value;
 import com.daml.ledger.javaapi.data.codegen.DamlRecord;
 import com.daml.ledger.javaapi.data.codegen.PrimitiveValueDecoders;
 import com.daml.ledger.javaapi.data.codegen.ValueDecoder;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoder;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoder;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoders;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfReader;
 import java.lang.Deprecated;
 import java.lang.IllegalArgumentException;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 public class Change extends DamlRecord<Change> {
-  public static final String _packageId = "2e0159bf1cf8111e91e1a6049bc23ec527b4bc0d91efc72482c36dd1fe4fe073";
+  public static final String _packageId = "47c7c0470a13a318301073df684c2e4450fd5d31b1d86ccc207fdda12d17343a";
 
   public final String newAlias;
 
@@ -34,7 +42,7 @@ public class Change extends DamlRecord<Change> {
   public static ValueDecoder<Change> valueDecoder() throws IllegalArgumentException {
     return value$ -> {
       Value recordValue$ = value$;
-      List<com.daml.ledger.javaapi.data.DamlRecord.Field> fields$ = PrimitiveValueDecoders.recordCheck(1,
+      List<com.daml.ledger.javaapi.data.DamlRecord.Field> fields$ = PrimitiveValueDecoders.recordCheck(1,0,
           recordValue$);
       String newAlias = PrimitiveValueDecoders.fromText.decode(fields$.get(0).getValue());
       return new Change(newAlias);
@@ -45,6 +53,25 @@ public class Change extends DamlRecord<Change> {
     ArrayList<com.daml.ledger.javaapi.data.DamlRecord.Field> fields = new ArrayList<com.daml.ledger.javaapi.data.DamlRecord.Field>(1);
     fields.add(new com.daml.ledger.javaapi.data.DamlRecord.Field("newAlias", new Text(this.newAlias)));
     return new com.daml.ledger.javaapi.data.DamlRecord(fields);
+  }
+
+  public static JsonLfDecoder<Change> jsonDecoder() {
+    return JsonLfDecoders.record(Arrays.asList("newAlias"), name -> {
+          switch (name) {
+            case "newAlias": return com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.JavaArg.at(0, com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.text);
+            default: return null;
+          }
+        }
+        , (Object[] args) -> new Change(JsonLfDecoders.cast(args[0])));
+  }
+
+  public static Change fromJson(String json) throws JsonLfDecoder.Error {
+    return jsonDecoder().decode(new JsonLfReader(json));
+  }
+
+  public JsonLfEncoder jsonEncoder() {
+    return JsonLfEncoders.record(
+        JsonLfEncoders.Field.of("newAlias", apply(JsonLfEncoders::text, newAlias)));
   }
 
   @Override
@@ -69,6 +96,6 @@ public class Change extends DamlRecord<Change> {
 
   @Override
   public String toString() {
-    return String.format("examples.javabot.codegen.user.Change(%s)", this.newAlias);
+    return String.format("examples.automation.codegen.user.Change(%s)", this.newAlias);
   }
 }

@@ -1,4 +1,6 @@
-package examples.javabot.codegen.user;
+package examples.automation.codegen.user;
+
+import static com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoders.apply;
 
 import com.daml.ledger.javaapi.data.ContractFilter;
 import com.daml.ledger.javaapi.data.CreateAndExerciseCommand;
@@ -22,35 +24,41 @@ import com.daml.ledger.javaapi.data.codegen.Exercised;
 import com.daml.ledger.javaapi.data.codegen.PrimitiveValueDecoders;
 import com.daml.ledger.javaapi.data.codegen.Update;
 import com.daml.ledger.javaapi.data.codegen.ValueDecoder;
-import examples.javabot.codegen.da.types.Tuple2;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoder;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoder;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoders;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfReader;
+import examples.automation.codegen.da.types.Tuple2;
 import java.lang.Deprecated;
 import java.lang.IllegalArgumentException;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 public final class Alias extends Template {
-  public static final Identifier TEMPLATE_ID = new Identifier("2e0159bf1cf8111e91e1a6049bc23ec527b4bc0d91efc72482c36dd1fe4fe073", "User", "Alias");
+  public static final Identifier TEMPLATE_ID = new Identifier("47c7c0470a13a318301073df684c2e4450fd5d31b1d86ccc207fdda12d17343a", "User", "Alias");
 
   public static final Choice<Alias, Change, ContractId> CHOICE_Change = 
       Choice.create("Change", value$ -> value$.toValue(), value$ -> Change.valueDecoder()
         .decode(value$), value$ ->
         new ContractId(value$.asContractId().orElseThrow(() -> new IllegalArgumentException("Expected value$ to be of type com.daml.ledger.javaapi.data.ContractId")).getValue()));
 
-  public static final Choice<Alias, examples.javabot.codegen.da.internal.template.Archive, Unit> CHOICE_Archive = 
+  public static final Choice<Alias, examples.automation.codegen.da.internal.template.Archive, Unit> CHOICE_Archive = 
       Choice.create("Archive", value$ -> value$.toValue(), value$ ->
-        examples.javabot.codegen.da.internal.template.Archive.valueDecoder().decode(value$),
+        examples.automation.codegen.da.internal.template.Archive.valueDecoder().decode(value$),
         value$ -> PrimitiveValueDecoders.fromUnit.decode(value$));
 
   public static final ContractCompanion.WithKey<Contract, ContractId, Alias, Tuple2<String, String>> COMPANION = 
-      new ContractCompanion.WithKey<>("examples.javabot.codegen.user.Alias", TEMPLATE_ID,
-        ContractId::new, v -> Alias.templateValueDecoder().decode(v), Contract::new,
-        List.of(CHOICE_Change, CHOICE_Archive), e -> Tuple2.<java.lang.String,
+      new ContractCompanion.WithKey<>("examples.automation.codegen.user.Alias", TEMPLATE_ID,
+        ContractId::new, v -> Alias.templateValueDecoder().decode(v), Alias::fromJson,
+        Contract::new, List.of(CHOICE_Change, CHOICE_Archive), e -> Tuple2.<java.lang.String,
         java.lang.String>valueDecoder(PrimitiveValueDecoders.fromParty,
         PrimitiveValueDecoders.fromParty).decode(e));
 
@@ -94,7 +102,7 @@ public final class Alias extends Template {
    */
   @Deprecated
   public static Update<Exercised<Unit>> exerciseByKeyArchive(Tuple2<String, String> key,
-      examples.javabot.codegen.da.internal.template.Archive arg) {
+      examples.automation.codegen.da.internal.template.Archive arg) {
     return byKey(key).exerciseArchive(arg);
   }
 
@@ -127,7 +135,7 @@ public final class Alias extends Template {
    */
   @Deprecated
   public Update<Exercised<Unit>> createAndExerciseArchive(
-      examples.javabot.codegen.da.internal.template.Archive arg) {
+      examples.automation.codegen.da.internal.template.Archive arg) {
     return createAnd().exerciseArchive(arg);
   }
 
@@ -136,7 +144,7 @@ public final class Alias extends Template {
    */
   @Deprecated
   public Update<Exercised<Unit>> createAndExerciseArchive() {
-    return createAndExerciseArchive(new examples.javabot.codegen.da.internal.template.Archive());
+    return createAndExerciseArchive(new examples.automation.codegen.da.internal.template.Archive());
   }
 
   public static Update<Created<ContractId>> create(String username, String alias, String public$) {
@@ -177,12 +185,35 @@ public final class Alias extends Template {
   private static ValueDecoder<Alias> templateValueDecoder() throws IllegalArgumentException {
     return value$ -> {
       Value recordValue$ = value$;
-      List<DamlRecord.Field> fields$ = PrimitiveValueDecoders.recordCheck(3, recordValue$);
+      List<DamlRecord.Field> fields$ = PrimitiveValueDecoders.recordCheck(3,0, recordValue$);
       String username = PrimitiveValueDecoders.fromParty.decode(fields$.get(0).getValue());
       String alias = PrimitiveValueDecoders.fromText.decode(fields$.get(1).getValue());
       String public$ = PrimitiveValueDecoders.fromParty.decode(fields$.get(2).getValue());
       return new Alias(username, alias, public$);
     } ;
+  }
+
+  public static JsonLfDecoder<Alias> jsonDecoder() {
+    return JsonLfDecoders.record(Arrays.asList("username", "alias", "public$"), name -> {
+          switch (name) {
+            case "username": return com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.JavaArg.at(0, com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.party);
+            case "alias": return com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.JavaArg.at(1, com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.text);
+            case "public$": return com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.JavaArg.at(2, com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.party);
+            default: return null;
+          }
+        }
+        , (Object[] args) -> new Alias(JsonLfDecoders.cast(args[0]), JsonLfDecoders.cast(args[1]), JsonLfDecoders.cast(args[2])));
+  }
+
+  public static Alias fromJson(String json) throws JsonLfDecoder.Error {
+    return jsonDecoder().decode(new JsonLfReader(json));
+  }
+
+  public JsonLfEncoder jsonEncoder() {
+    return JsonLfEncoders.record(
+        JsonLfEncoders.Field.of("username", apply(JsonLfEncoders::party, username)),
+        JsonLfEncoders.Field.of("alias", apply(JsonLfEncoders::text, alias)),
+        JsonLfEncoders.Field.of("public$", apply(JsonLfEncoders::party, public$)));
   }
 
   public static ContractFilter<Contract> contractFilter() {
@@ -212,7 +243,7 @@ public final class Alias extends Template {
 
   @Override
   public String toString() {
-    return String.format("examples.javabot.codegen.user.Alias(%s, %s, %s)", this.username,
+    return String.format("examples.automation.codegen.user.Alias(%s, %s, %s)", this.username,
         this.alias, this.public$);
   }
 
@@ -275,12 +306,12 @@ public final class Alias extends Template {
     }
 
     default Update<Exercised<Unit>> exerciseArchive(
-        examples.javabot.codegen.da.internal.template.Archive arg) {
+        examples.automation.codegen.da.internal.template.Archive arg) {
       return makeExerciseCmd(CHOICE_Archive, arg);
     }
 
     default Update<Exercised<Unit>> exerciseArchive() {
-      return exerciseArchive(new examples.javabot.codegen.da.internal.template.Archive());
+      return exerciseArchive(new examples.automation.codegen.da.internal.template.Archive());
     }
   }
 

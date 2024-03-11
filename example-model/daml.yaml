@@ -11,5 +11,5 @@ start-navigator: true
 init-script: Setup:setup
 codegen:
   java:
-    package-prefix: examples.javabot.codegen
+    package-prefix: examples.automation.codegen
     output-directory: ../java/src/main/java/

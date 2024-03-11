@@ -1,11 +1,13 @@
 // Copyright (c) 2023 Digital Asset (Switzerland) GmbH and/or its affiliates. All rights reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-package examples.javabot;
+package examples.automation;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,13 +21,14 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
 public class Main {
+    private final static Logger LOGGER = Logger.getLogger(Main.class.getName());
 
     public static void main(String[] args) {
 
         String appId = System.getenv("DAML_APPLICATION_ID");
         String ledgerId = System.getenv("DAML_LEDGER_ID");
         String userId = System.getenv("DAML_USER_ID");
-        String url[] = System.getenv("DAML_LEDGER_URL").split(":");
+        String[] url = System.getenv("DAML_LEDGER_URL").split(":");
         String host = url[0];
         int port = Integer.parseInt(url[1]);
 
@@ -35,12 +38,12 @@ public class Main {
             JSONObject config = new JSONObject(configContent);
 
             System.out.println("configFilePath: " + configFilePath);
-            System.out.println("configFileContents" + config.toString());
+            System.out.println("configFileContents" + config);
 
         } catch (IOException | JSONException e) {
             // Catch any file read or JSON parsing errors in case the argument JSON file wasn't uploaded.
             // Since this is just an example we don't need to worry about that currently.
-            e.printStackTrace();
+            LOGGER.log( Level.SEVERE, e.toString(), e );
         }
 
         // Initialize a plaintext gRPC channel
@@ -63,7 +66,7 @@ public class Main {
             Thread.currentThread().join();
             System.exit(0);
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            LOGGER.log( Level.SEVERE, e.toString(), e );
         }
     }
 }

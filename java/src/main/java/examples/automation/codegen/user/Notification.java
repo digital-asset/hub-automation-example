@@ -1,4 +1,6 @@
-package examples.javabot.codegen.user;
+package examples.automation.codegen.user;
+
+import static com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoders.apply;
 
 import com.daml.ledger.javaapi.data.ContractFilter;
 import com.daml.ledger.javaapi.data.CreateAndExerciseCommand;
@@ -20,23 +22,29 @@ import com.daml.ledger.javaapi.data.codegen.Exercised;
 import com.daml.ledger.javaapi.data.codegen.PrimitiveValueDecoders;
 import com.daml.ledger.javaapi.data.codegen.Update;
 import com.daml.ledger.javaapi.data.codegen.ValueDecoder;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoder;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoder;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfEncoders;
+import com.daml.ledger.javaapi.data.codegen.json.JsonLfReader;
 import java.lang.Deprecated;
 import java.lang.IllegalArgumentException;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
 public final class Notification extends Template {
-  public static final Identifier TEMPLATE_ID = new Identifier("2e0159bf1cf8111e91e1a6049bc23ec527b4bc0d91efc72482c36dd1fe4fe073", "User", "Notification");
+  public static final Identifier TEMPLATE_ID = new Identifier("47c7c0470a13a318301073df684c2e4450fd5d31b1d86ccc207fdda12d17343a", "User", "Notification");
 
-  public static final Choice<Notification, examples.javabot.codegen.da.internal.template.Archive, Unit> CHOICE_Archive = 
+  public static final Choice<Notification, examples.automation.codegen.da.internal.template.Archive, Unit> CHOICE_Archive = 
       Choice.create("Archive", value$ -> value$.toValue(), value$ ->
-        examples.javabot.codegen.da.internal.template.Archive.valueDecoder().decode(value$),
+        examples.automation.codegen.da.internal.template.Archive.valueDecoder().decode(value$),
         value$ -> PrimitiveValueDecoders.fromUnit.decode(value$));
 
   public static final Choice<Notification, Acknowledge, Unit> CHOICE_Acknowledge = 
@@ -44,9 +52,9 @@ public final class Notification extends Template {
         .decode(value$), value$ -> PrimitiveValueDecoders.fromUnit.decode(value$));
 
   public static final ContractCompanion.WithoutKey<Contract, ContractId, Notification> COMPANION = 
-      new ContractCompanion.WithoutKey<>("examples.javabot.codegen.user.Notification", TEMPLATE_ID,
-        ContractId::new, v -> Notification.templateValueDecoder().decode(v), Contract::new,
-        List.of(CHOICE_Archive, CHOICE_Acknowledge));
+      new ContractCompanion.WithoutKey<>("examples.automation.codegen.user.Notification",
+        TEMPLATE_ID, ContractId::new, v -> Notification.templateValueDecoder().decode(v),
+        Notification::fromJson, Contract::new, List.of(CHOICE_Archive, CHOICE_Acknowledge));
 
   public final String username;
 
@@ -70,7 +78,7 @@ public final class Notification extends Template {
    */
   @Deprecated
   public Update<Exercised<Unit>> createAndExerciseArchive(
-      examples.javabot.codegen.da.internal.template.Archive arg) {
+      examples.automation.codegen.da.internal.template.Archive arg) {
     return createAnd().exerciseArchive(arg);
   }
 
@@ -79,7 +87,7 @@ public final class Notification extends Template {
    */
   @Deprecated
   public Update<Exercised<Unit>> createAndExerciseArchive() {
-    return createAndExerciseArchive(new examples.javabot.codegen.da.internal.template.Archive());
+    return createAndExerciseArchive(new examples.automation.codegen.da.internal.template.Archive());
   }
 
   /**
@@ -136,12 +144,35 @@ public final class Notification extends Template {
   private static ValueDecoder<Notification> templateValueDecoder() throws IllegalArgumentException {
     return value$ -> {
       Value recordValue$ = value$;
-      List<DamlRecord.Field> fields$ = PrimitiveValueDecoders.recordCheck(3, recordValue$);
+      List<DamlRecord.Field> fields$ = PrimitiveValueDecoders.recordCheck(3,0, recordValue$);
       String username = PrimitiveValueDecoders.fromParty.decode(fields$.get(0).getValue());
       String message = PrimitiveValueDecoders.fromText.decode(fields$.get(1).getValue());
       String public$ = PrimitiveValueDecoders.fromParty.decode(fields$.get(2).getValue());
       return new Notification(username, message, public$);
     } ;
+  }
+
+  public static JsonLfDecoder<Notification> jsonDecoder() {
+    return JsonLfDecoders.record(Arrays.asList("username", "message", "public$"), name -> {
+          switch (name) {
+            case "username": return com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.JavaArg.at(0, com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.party);
+            case "message": return com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.JavaArg.at(1, com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.text);
+            case "public$": return com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.JavaArg.at(2, com.daml.ledger.javaapi.data.codegen.json.JsonLfDecoders.party);
+            default: return null;
+          }
+        }
+        , (Object[] args) -> new Notification(JsonLfDecoders.cast(args[0]), JsonLfDecoders.cast(args[1]), JsonLfDecoders.cast(args[2])));
+  }
+
+  public static Notification fromJson(String json) throws JsonLfDecoder.Error {
+    return jsonDecoder().decode(new JsonLfReader(json));
+  }
+
+  public JsonLfEncoder jsonEncoder() {
+    return JsonLfEncoders.record(
+        JsonLfEncoders.Field.of("username", apply(JsonLfEncoders::party, username)),
+        JsonLfEncoders.Field.of("message", apply(JsonLfEncoders::text, message)),
+        JsonLfEncoders.Field.of("public$", apply(JsonLfEncoders::party, public$)));
   }
 
   public static ContractFilter<Contract> contractFilter() {
@@ -171,7 +202,7 @@ public final class Notification extends Template {
 
   @Override
   public String toString() {
-    return String.format("examples.javabot.codegen.user.Notification(%s, %s, %s)", this.username,
+    return String.format("examples.automation.codegen.user.Notification(%s, %s, %s)", this.username,
         this.message, this.public$);
   }
 
@@ -215,12 +246,12 @@ public final class Notification extends Template {
 
   public interface Exercises<Cmd> extends com.daml.ledger.javaapi.data.codegen.Exercises.Archive<Cmd> {
     default Update<Exercised<Unit>> exerciseArchive(
-        examples.javabot.codegen.da.internal.template.Archive arg) {
+        examples.automation.codegen.da.internal.template.Archive arg) {
       return makeExerciseCmd(CHOICE_Archive, arg);
     }
 
     default Update<Exercised<Unit>> exerciseArchive() {
-      return exerciseArchive(new examples.javabot.codegen.da.internal.template.Archive());
+      return exerciseArchive(new examples.automation.codegen.da.internal.template.Archive());
     }
 
     default Update<Exercised<Unit>> exerciseAcknowledge(Acknowledge arg) {
