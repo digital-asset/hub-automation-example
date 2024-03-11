@@ -6,3 +6,6 @@ __pycache__/
 
 # maven build files
 target
+
+# vscode
+.vscode
