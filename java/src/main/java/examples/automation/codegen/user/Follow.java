@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class Follow extends DamlRecord<Follow> {
-  public static final String _packageId = "47c7c0470a13a318301073df684c2e4450fd5d31b1d86ccc207fdda12d17343a";
+  public static final String _packageId = "7d485a05d84710d07b95eae92c79960d5398c61c34aff7d38896ad552d885a9c";
 
   public final String userToFollow;
 

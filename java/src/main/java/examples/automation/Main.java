@@ -6,8 +6,7 @@ package examples.automation;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Optional;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,32 +18,23 @@ import com.daml.ledger.api.v1.admin.UserManagementServiceOuterClass.GetUserRespo
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
-    private final static Logger LOGGER = Logger.getLogger(Main.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(Processor.class.getName());
 
     public static void main(String[] args) {
 
         String appId = System.getenv("DAML_APPLICATION_ID");
         String ledgerId = System.getenv("DAML_LEDGER_ID");
         String userId = System.getenv("DAML_USER_ID");
+        // Split the URL into host and port
         String[] url = System.getenv("DAML_LEDGER_URL").split(":");
         String host = url[0];
         int port = Integer.parseInt(url[1]);
 
-        try {
-            String configFilePath = System.getenv("CONFIG_FILE");
-            String configContent = Files.readString(Paths.get(configFilePath));
-            JSONObject config = new JSONObject(configContent);
-
-            System.out.println("configFilePath: " + configFilePath);
-            System.out.println("configFileContents" + config);
-
-        } catch (IOException | JSONException e) {
-            // Catch any file read or JSON parsing errors in case the argument JSON file wasn't uploaded.
-            // Since this is just an example we don't need to worry about that currently.
-            LOGGER.log( Level.SEVERE, e.toString(), e );
-        }
+        parseConfigFile();
 
         // Initialize a plaintext gRPC channel
         ManagedChannel channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
@@ -53,7 +43,7 @@ public class Main {
         UserManagementServiceBlockingStub userService = UserManagementServiceGrpc.newBlockingStub(channel);
         GetUserResponse user = userService.getUser(GetUserRequest.newBuilder().setUserId(userId).build());
         String primaryParty = user.getUser().getPrimaryParty();
-        System.out.printf("Running as %s with primary party %s", userId, primaryParty);
+        logger.info("Running as {} with primary party {}}", userId, primaryParty);
 
         // initialize the response processor
         Processor processor = new Processor(primaryParty, ledgerId, appId, channel);
@@ -66,7 +56,35 @@ public class Main {
             Thread.currentThread().join();
             System.exit(0);
         } catch (InterruptedException e) {
-            LOGGER.log( Level.SEVERE, e.toString(), e );
+            logger.error(e.toString(), e );
+        }
+    }
+
+    private static void parseConfigFile() {
+        try {
+
+            Optional<String> configFilePath = Optional.ofNullable(System.getenv("CONFIG_FILE"));
+
+            if (configFilePath.isPresent()) {
+                String configContent = Files.readString(Paths.get(configFilePath.get()));
+
+                if (!configContent.isBlank()) {
+                    logger.info(configContent);
+                    JSONObject config = new JSONObject(configContent);
+                    System.out.println("configFilePath: " + configFilePath);
+                    System.out.println("configFileContents" + config.toString(4));
+                } else {
+                    throw new IOException("No config file content found");
+                }
+            }
+            else {
+                throw new IOException("No config file content found");
+            }
+
+        } catch (IOException | JSONException e) {
+            // Catch any file read or JSON parsing errors in case the argument JSON file wasn't uploaded.
+            // Since this is just an example we don't need to worry about that currently.
+            logger.warn(e.toString(), e);
         }
     }
 }

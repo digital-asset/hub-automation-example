@@ -19,14 +19,15 @@ import com.google.protobuf.Empty;
 import examples.automation.codegen.user.Notification;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,7 +35,7 @@ import java.util.stream.Stream;
  * This class subscribes to the stream of transactions for a given party and reacts to Ping or Pong contracts.
  */
 public class Processor {
-    private final static Logger LOGGER = Logger.getLogger(Processor.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(Processor.class.getName());
 
     private final String party;
     private final String ledgerId;
@@ -71,17 +72,16 @@ public class Processor {
 
             @Override
             public void onError(Throwable t) {
-                System.err.printf("%s encountered an error while processing transactions!\n", party);
-                LOGGER.log( Level.SEVERE, t.toString(), t );
+                logger.error("{} encountered an error while processing transactions : {}", party, t.toString(), t );
                 System.exit(0);
             }
 
             @Override
             public void onCompleted() {
-                System.out.printf("%s's transactions stream completed.\n", party);
+                logger.info("{} transactions stream completed", party);
             }
         };
-        System.out.printf("%s starts reading transactions.\n", party);
+        logger.info("{} starts reading transactions", party);
         transactionService.getTransactions(getTransactionsRequest.toProto(), transactionObserver);
     }
 
@@ -118,7 +118,7 @@ public class Processor {
                     .withReadAs(List.of(party))
                     .withWorkflowId(tx.getWorkflowId());
             Empty result = submissionService.submit(SubmitRequest.toProto(ledgerId, commandsSubmission));
-            LOGGER.info(result.toString());
+            logger.info(result.toString());
         }
     }
 
