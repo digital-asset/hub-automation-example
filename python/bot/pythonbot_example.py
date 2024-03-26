@@ -4,13 +4,11 @@
 import logging
 import os
 
-import dazl
 from dazl import connect
-from dazl.ledger import CreateEvent, ArchiveEvent, Boundary, ExerciseCommand
+from dazl.ledger import CreateEvent, ArchiveEvent, Boundary
 from dazl.prim import Party
 
-
-dazl.setup_default_logger(logging.INFO)
+logging.basicConfig()
 
 # This is the Package ID of the dar we want to follow contracts from.
 
@@ -21,13 +19,15 @@ dazl.setup_default_logger(logging.INFO)
 
 # This can be found by running `daml damlc -- inspect /path/to/dar | grep "package"`
 
-package_id="d36d2d419030b7c335eeeb138fa43520a81a56326e4755083ba671c1a2063e76"
+package_id = "d36d2d419030b7c335eeeb138fa43520a81a56326e4755083ba671c1a2063e76"
+
 
 # Define the names of our templates for later reuse
 class Templates:
     User = f"{package_id}:User:User"
     Alias = f"{package_id}:Alias:Alias"
     Notification = f"{package_id}:Notification:Notification"
+
 
 async def main():
     logging.info("Starting up bot...")
@@ -57,14 +57,15 @@ async def main():
             # parameter that can be passed to 'conn.stream_many' and only begin the stream from that point
 
             async for event in stream.items():
-               if isinstance(event, CreateEvent):
-                   logging.info(f"Noticed a {event.contract_id.value_type} contract: {event.payload}")
+                if isinstance(event, CreateEvent):
+                    logging.info(f"Noticed a {event.contract_id.value_type} contract: {event.payload}")
 
-                   # When the contract that was of the Notification template is created, automatically exercise the "Acknowledge" choice
-                   if str(event.contract_id.value_type) == Templates.Notification:
-                       await conn.exercise(event.contract_id, "Acknowledge", {})
+                    # When the contract that was of the Notification template is created, automatically exercise the
+                    # "Acknowledge" choice
+                    if str(event.contract_id.value_type) == Templates.Notification:
+                        await conn.exercise(event.contract_id, "Acknowledge", {})
 
-               elif isinstance(event, ArchiveEvent):
+                elif isinstance(event, ArchiveEvent):
                     logging.info(f"Noticed that a {event.contract_id.value_type} contract was deleted")
-               elif isinstance(event, Boundary):
-                   logging.info(f"Up to date on the current state of the ledger at offset: {event.offset}")
+                elif isinstance(event, Boundary):
+                    logging.info(f"Up to date on the current state of the ledger at offset: {event.offset}")

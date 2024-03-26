@@ -33,9 +33,9 @@ setup = do
   -- In the getting started guide, we only have one participant so we set the participant name to None.
   -- If you are running this against a ledger with multiple participants, specify the participant the parties
   -- should be hosted on.
-  alice <- createTestUser $ TestUser "Alice" public defaultParticipant
-  bob <- createTestUser $ TestUser "Bob" public defaultParticipant
-  charlie <- createTestUser $ TestUser "Charlie" public defaultParticipant
+  alice <- createTestUser $ TestUser "alice" public defaultParticipant
+  bob <- createTestUser $ TestUser "bob" public defaultParticipant
+  charlie <- createTestUser $ TestUser "charlie" public defaultParticipant
   pure $ Parties with
     alice
     bob

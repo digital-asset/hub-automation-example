@@ -1,2 +1,15 @@
 dist/
 __pycache__/
+
+# intellij
+.idea
+*.iml
+
+# maven build files
+target
+
+# vscode
+.vscode
+
+# mac
+.DS_Store
