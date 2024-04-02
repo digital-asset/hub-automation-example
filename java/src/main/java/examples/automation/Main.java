@@ -24,13 +24,14 @@ import org.slf4j.LoggerFactory;
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Processor.class.getName());
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
 
         String appId = System.getenv("DAML_APPLICATION_ID");
         String ledgerId = System.getenv("DAML_LEDGER_ID");
         String userId = System.getenv("DAML_USER_ID");
         // Split the URL into host and port
         String[] url = System.getenv("DAML_LEDGER_URL").split(":");
+        String jdbcUrl = System.getenv("PQS_JDBC_URL");
         String host = url[0];
         int port = Integer.parseInt(url[1]);
 
@@ -50,6 +51,10 @@ public class Main {
 
         // start the processors asynchronously
         processor.runIndefinitely();
+
+        // pqs query
+        PqsJdbcConnection connect = new PqsJdbcConnection(jdbcUrl);
+        connect.run();
 
         try {
             // Run forever
