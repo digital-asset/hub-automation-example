@@ -24,13 +24,14 @@ import org.slf4j.LoggerFactory;
 public class Main {
     private static final Logger logger = LoggerFactory.getLogger(Processor.class.getName());
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
 
         String appId = System.getenv("DAML_APPLICATION_ID");
         String ledgerId = System.getenv("DAML_LEDGER_ID");
         String userId = System.getenv("DAML_USER_ID");
         // Split the URL into host and port
         String[] url = System.getenv("DAML_LEDGER_URL").split(":");
+        String jdbcUrl = System.getenv("PQS_JDBC_URL");
         String host = url[0];
         int port = Integer.parseInt(url[1]);
 
@@ -45,19 +46,17 @@ public class Main {
         String primaryParty = user.getUser().getPrimaryParty();
         logger.info("Running as {} with primary party {}}", userId, primaryParty);
 
+        // pqs query
+        PqsJdbcConnection pqsConnection = new PqsJdbcConnection(jdbcUrl);
+
         // initialize the response processor
         Processor processor = new Processor(primaryParty, ledgerId, appId, channel);
 
         // start the processors asynchronously
         processor.runIndefinitely();
 
-        try {
-            // Run forever
-            Thread.currentThread().join();
-            System.exit(0);
-        } catch (InterruptedException e) {
-            logger.error(e.toString(), e );
-        }
+        // run the PQS server
+        new PqsHttpServer(pqsConnection).start();
     }
 
     private static void parseConfigFile() {
