@@ -4,6 +4,8 @@ import org.json.JSONObject;
 import org.json.XML;
 import org.postgresql.ds.PGSimpleDataSource;
 
+import com.daml.ledger.javaapi.data.Identifier;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,6 +55,10 @@ public class PqsJdbcConnection {
         }
     }
 
+    private String makeTemplateName(Identifier template) {
+        return String.format("%s:%s:%s", template.getPackageId(), template.getModuleName(), template.getEntityName());
+    }
+
     private List<JSONObject> getContracts(String query) {
         // payload is returned as a JSON object
         // postgres sql provides the ‘->’ operator to retrieve values of the various keys in a JSON object.
@@ -62,12 +68,12 @@ public class PqsJdbcConnection {
         return jsonList;
     }
 
-    public List<JSONObject> getActiveUsers() {
-        return this.getContracts("select payload from active('7d485a05d84710d07b95eae92c79960d5398c61c34aff7d38896ad552d885a9c:User:User')");
+    public List<JSONObject> getActiveContracts(Identifier template) {
+        return this.getContracts(String.format("select payload from active('%s')", makeTemplateName(template)));
     }
 
-    public List<JSONObject> getArchivedNotifications() {
-        return this.getContracts("select payload from archives('7d485a05d84710d07b95eae92c79960d5398c61c34aff7d38896ad552d885a9c:User:Notification')");
+    public List<JSONObject> getArchivedContracts(Identifier template) {
+        return this.getContracts(String.format("select payload from archives('%s')", makeTemplateName(template)));
     }
 }
 
