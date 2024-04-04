@@ -46,23 +46,17 @@ public class Main {
         String primaryParty = user.getUser().getPrimaryParty();
         logger.info("Running as {} with primary party {}}", userId, primaryParty);
 
+        // pqs query
+        PqsJdbcConnection pqsConnection = new PqsJdbcConnection(jdbcUrl);
+
         // initialize the response processor
         Processor processor = new Processor(primaryParty, ledgerId, appId, channel);
 
         // start the processors asynchronously
         processor.runIndefinitely();
 
-        // pqs query
-        PqsJdbcConnection connect = new PqsJdbcConnection(jdbcUrl);
-        connect.run();
-
-        try {
-            // Run forever
-            Thread.currentThread().join();
-            System.exit(0);
-        } catch (InterruptedException e) {
-            logger.error(e.toString(), e );
-        }
+        // run the PQS server
+        new PqsHttpServer(pqsConnection).start();
     }
 
     private static void parseConfigFile() {
