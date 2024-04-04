@@ -5,7 +5,7 @@
     <groupId>com.damlhub.automation.test</groupId>
     <artifactId>hub-example-automation</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.1</version>
+    <version>0.2.0</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
