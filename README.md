@@ -6,13 +6,13 @@ This repository contains examples of automations (written in Python or in Java) 
 
 ## Example Java Automation
 
-Simple example of a [Java Automation](tree/main/java) that can be run in Daml Hub. This can be copied and then adjusted to your application.
+Simple example of a [Java Automation](java/) that can be run in Daml Hub. This can be copied and then adjusted to your application.
 
 ## Example Python Automation
 
-Simple example of a [Python Automation](tree/main/python) that can be run in Daml Hub. This can be copied and then adjusted to your application.
+Simple example of a [Python Automation](python/) that can be run in Daml Hub. This can be copied and then adjusted to your application.
 
 ## Example Daml Model
 
-Note that the Daml model in [Example Model](tree/main/example-model) is for reference and does not need to be copied when using this code as a template.
+Note that the Daml model in [Example Model](example-model/) is for reference and does not need to be copied when using this code as a template.
 
