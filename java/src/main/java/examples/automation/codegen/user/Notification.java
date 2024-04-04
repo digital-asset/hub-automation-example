@@ -40,7 +40,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public final class Notification extends Template {
-  public static final Identifier TEMPLATE_ID = new Identifier("7d485a05d84710d07b95eae92c79960d5398c61c34aff7d38896ad552d885a9c", "User", "Notification");
+  public static final Identifier TEMPLATE_ID = new Identifier("70aa5450d67bf911d8683d255227ca8fd0ca0feb4d2fcaa4751cd39d13ce476c", "User", "Notification");
 
   public static final Choice<Notification, examples.automation.codegen.da.internal.template.Archive, Unit> CHOICE_Archive = 
       Choice.create("Archive", value$ -> value$.toValue(), value$ ->

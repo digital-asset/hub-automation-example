@@ -19,7 +19,7 @@ logging.basicConfig()
 
 # This can be found by running `daml damlc -- inspect /path/to/dar | grep "package"`
 
-package_id = "d36d2d419030b7c335eeeb138fa43520a81a56326e4755083ba671c1a2063e76"
+package_id = "70aa5450d67bf911d8683d255227ca8fd0ca0feb4d2fcaa4751cd39d13ce476c"
 
 
 # Define the names of our templates for later reuse
