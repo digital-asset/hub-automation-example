@@ -12,13 +12,11 @@ TARGET := $(NAME)-$(VERSION).jar
 # SRC := $(wildcard src/*.java)
 SRC := $(call must-shell,find . -type f -and -name "*.java" -o -name "*.xml" -o -name "*.conf")
 
-all: $(TARGET) daml-build daml-codegen
+all: daml-build daml-codegen $(TARGET)
 
-$(TARGET): $(BUILD_OUTPUT)
-	cp $< $@
-
-$(BUILD_OUTPUT): $(SRC) pom.xml
+$(TARGET): $(SRC) pom.xml
 	mvn install
+	cp $(BUILD_OUTPUT) $@
 
 daml-build:
 	(cd ../example-model && daml build && cd ../java)
