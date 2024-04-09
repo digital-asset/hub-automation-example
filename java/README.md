@@ -138,3 +138,55 @@ If you would like to accept traffic to that endpoint, you can run a webserver ru
 
 ## Automation Code
 JVM automations running on Daml Hub generally use the [Daml Java Bindings](https://docs.daml.com/app-dev/bindings-java/index.html#java-bindings) to react to incoming Daml contracts.
+
+
+## Participant Query Store (PQS) Usage
+
+A JVM automation can also query the PQS Postgres database if you want to take an action based on a particular state of the ledger.
+
+PQS queries are also the recommended way of reading data if you need to query for archived historical information, rather than relying on the stream of gRPC transactions.
+
+
+### Connecting to Participant Query Store (PQS)
+
+The full JDBC URL connection to the Postgres database is made available to your running JVM automation as the environment variable `PQS_JDBC_URL`
+
+You can read from this environment variable and then create a Postgres database connection using your JDBC driver of choice.
+
+
+Simple example of connecting to a PQS database using JDBC:
+
+```java
+    import org.postgresql.ds.PGSimpleDataSource;
+    import java.sql.*;
+
+    String jdbcUrl = System.getenv("PQS_JDBC_URL");
+    PqsJdbcConnection pqsJdbcConnection = new PqsJdbcConnection(jdbcUrl);
+
+    public class PqsJdbcConnection {
+        private final PGSimpleDataSource dataSource;
+
+        public PqsJdbcConnection(String jdbcUrl) throws ClassNotFoundException {
+            Class.forName("org.postgresql.Driver");
+            this.dataSource = new PGSimpleDataSource();
+            dataSource.setUrl(jdbcUrl);
+        }
+
+        public ResultSet queryUserContracts(String query) {
+            try {
+                Connection connection = dataSource.getConnection();
+                Statement st = connection.createStatement();
+                // The template below must be prefixed with the Package ID if there is more than
+                // one package with the template on the participant.
+                return st.executeQuery("select payload from active('User:User')");
+            } catch (SQLException e) {
+                System.out.println("hit an exception: " + e.toString());
+                throw new RuntimeException(e);
+            }
+        }
+    }
+```
+
+A more concrete example of how PQS can be used with reusable code to query aactive and archived templates can be found in [PqsJdbcConnect.java](src/main/java/examples/automation/PqsJdbcConnection.java).
+
+More guidance on how to query the PQS is detailed in the [Participant Query Store (PQS) documentation](https://hub.daml.com/docs/quickstart#participant-query-store-pqs).
