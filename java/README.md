@@ -135,6 +135,8 @@ For incoming connections, Daml Hub provides a webhook URL of`http://{ledgerId}.d
 
 If you would like to accept traffic to that endpoint, you can run a webserver running on the default `0.0.0.0:8080`. A request pointed directly to the webhook URL will be routed to the root `/` of your server.
 
+An example of a small HTTP sever with endpoints exposing [PQS queries](#participant-query-store-pqs-usage) can be found in [PqsHttpServer.java](src/main/java/examples/automation/PqsHttpServer.java).
+
 
 ## Automation Code
 JVM automations running on Daml Hub generally use the [Daml Java Bindings](https://docs.daml.com/app-dev/bindings-java/index.html#java-bindings) to react to incoming Daml contracts.
