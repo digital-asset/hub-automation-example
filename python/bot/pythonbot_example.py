@@ -8,7 +8,7 @@ from dazl import connect
 from dazl.ledger import CreateEvent, ArchiveEvent, Boundary
 from dazl.prim import Party
 
-logging.basicConfig()
+logging.basicConfig(level=logging.INFO)
 
 # This is the Package ID of the dar we want to follow contracts from.
 
@@ -25,8 +25,8 @@ package_id = "70aa5450d67bf911d8683d255227ca8fd0ca0feb4d2fcaa4751cd39d13ce476c"
 # Define the names of our templates for later reuse
 class Templates:
     User = f"{package_id}:User:User"
-    Alias = f"{package_id}:Alias:Alias"
-    Notification = f"{package_id}:Notification:Notification"
+    Alias = f"{package_id}:User:Alias"
+    Notification = f"{package_id}:User:Notification"
 
 
 async def main():
@@ -38,12 +38,29 @@ async def main():
     # The URL path to the ledger you would like to connect to
     url = os.getenv('DAML_LEDGER_URL') or "localhost:6865"
 
-    # The party that is running the automation. The party will _only_ be able to see and operate on
-    # contracts that this party has access to via signatory or observer!
-    party = os.getenv('DAML_LEDGER_PARTY') or "party"
+    # The party that is running the automation if the automation was configured to run as a party.
+    # The party will _only_ be able to see and operate on contracts that this party has access to via
+    # signatory or observer!
+    party = Party(os.getenv('DAML_LEDGER_PARTY') or "party")
+
+    # The name of the application for authorization purposes. If running as a User, the 'application_name'
+    # parameter in dazl.connect _must_ be set to this variable.
+    application_name = os.getenv('DAML_LEDGER_APPLICATION_NAME') or "DAZL-Client"
+
+    # If the automation was configured to run as a User, DAML_LEDGER_PARTY will be set to "user",
+    # so we can use the user management functionality of dazl to retrieve the current running user's
+    # primary party.
+    try:
+        async with connect(url=url) as conn:
+            user = await conn.get_user()
+            logging.info(f"Setting party to {user.id}'s primary party: {user.primary_party}")
+            party = Party(user.primary_party)
+    except:
+        logging.info(f"User not found, using party {party}")
+
 
     # Start up a dazl connection
-    async with connect(url=url, act_as=Party(party)) as conn:
+    async with connect(url=url, act_as=party, application_name=application_name) as conn:
 
         # Stream both of our templates forever
         async with conn.stream_many([Templates.User, Templates.Alias, Templates.Notification]) as stream:
