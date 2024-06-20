@@ -3,13 +3,13 @@
 
 [tool.poetry]
 name = "bot"
-version = "0.2.0"
+version = "0.3.0"
 description = "Example of a Daml Hub Pythonbot"
 authors = ["Digital Asset"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-dazl = "^7.3.1"
+dazl = "^7.10.1"
 aiohttp = "^3.6.2"
 prometheus-client = "^0.15.0"
 
