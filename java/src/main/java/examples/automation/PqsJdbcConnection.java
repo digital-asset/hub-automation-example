@@ -7,10 +7,7 @@ import org.postgresql.ds.PGSimpleDataSource;
 import com.daml.ledger.javaapi.data.Identifier;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class PqsJdbcConnection {
@@ -55,9 +52,23 @@ public class PqsJdbcConnection {
         }
     }
 
+    public int callableStatement(String query) throws SQLException {
+        try {
+            Connection connection = dataSource.getConnection();
+            CallableStatement st = connection.prepareCall(query);
+            System.out.println("executing callable statement: " +  query);
+            return st.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e);
+            throw new SQLException(e);
+        }
+    }
+
     private String makeTemplateName(Identifier template) {
         return String.format("%s:%s:%s", template.getPackageId(), template.getModuleName(), template.getEntityName());
     }
+
+    //pqsreader queries
 
     private List<JSONObject> getContracts(String query) {
         // payload is returned as a JSON object
@@ -75,5 +86,38 @@ public class PqsJdbcConnection {
     public List<JSONObject> getArchivedContracts(Identifier template) {
         return this.getContracts(String.format("select payload from archives('%s')", makeTemplateName(template)));
     }
+
+    //redaction example
+    public JSONArray redactByContractId(String contractId, Identifier template) throws SQLException {
+
+        String redactionId =  UUID.randomUUID().toString();
+        List<String> contractsList = new ArrayList<String>();
+        String redactionStoredProc = String.format("select redact_contract('%s', '%s') from archives('%s')", contractId, redactionId, makeTemplateName(template));
+        List<Map<String, Object>> list = runQuery(redactionStoredProc);
+        list.forEach(contracts -> contracts.forEach((y, payload) -> contractsList.add(payload.toString())));
+        JSONArray redactedValue = new JSONArray(contractsList);
+        logger.info("Redacted value: " + redactedValue);
+        return redactedValue;
+    }
+
+
+    private String createIndexQuery(String indexName, String qualifiedName, String expression, String indexType) {
+        return String.format("call create_index_for_contract('%s', '%s', '%s', '%s')", indexName, qualifiedName, expression, indexType);
+    }
+
+    //create index over payload on table partition for corresponding qualified Daml entity
+
+    public JSONArray createIndex(Identifier template) throws SQLException {
+        List<String> contractsList = new ArrayList<String>();
+
+        String createIndexStatement = createIndexQuery("example_model_request_id",
+                "example-model:" + makeTemplateName(template),
+                   "((payload->>''party'')::text)",
+                   "btree");
+        int s = callableStatement(createIndexStatement);
+        contractsList.add(s,toString());
+        return new JSONArray(contractsList);
+    }
+
 }
 
