@@ -124,5 +124,20 @@ public class PqsJdbcConnection {
         return new JSONArray(contractsList);
     }
 
+    //drop index example
+
+    public JSONArray dropIndex(String indexName) throws SQLException {
+        // payload is returned as a JSON object
+        // postgres sql provides the ‘->’ operator to retrieve values of the various keys in a JSON object.
+        String query = String.format("DROP INDEX %s", indexName);
+        List<Map<String, Object>> list = runQuery(query);
+        return parseContracts(list);
+    }
+
+    private JSONArray parseContracts(List<Map<String, Object>> list) {
+        List<String> contractsList = new ArrayList<String>();
+        list.forEach(contracts -> contracts.forEach((y, payload) -> contractsList.add(payload.toString())));
+        return new JSONArray(contractsList);
+    }
 }
 
