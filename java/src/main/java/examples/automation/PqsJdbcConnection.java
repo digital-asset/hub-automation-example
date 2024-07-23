@@ -6,6 +6,8 @@ import org.json.XML;
 import org.postgresql.ds.PGSimpleDataSource;
 
 import com.daml.ledger.javaapi.data.Identifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.*;
@@ -13,11 +15,12 @@ import java.util.stream.Collectors;
 
 public class PqsJdbcConnection {
     private final PGSimpleDataSource dataSource;
+    private static final Logger logger = LoggerFactory.getLogger(Main.class.getName());
 
     public PqsJdbcConnection(String jdbcUrl) throws ClassNotFoundException {
         Class.forName("org.postgresql.Driver");
         this.dataSource = new PGSimpleDataSource();
-        System.out.println("jdbcUrl: " + jdbcUrl);
+        logger.info("jdbcUrl: {} ", jdbcUrl);
         dataSource.setUrl(jdbcUrl);
     }
 
@@ -27,7 +30,7 @@ public class PqsJdbcConnection {
                 Statement st = connection.createStatement();
                 ResultSet rs = st.executeQuery(query);
         ) {
-            System.out.println("running query " + query);
+            logger.info("running query {}", query);
 
             List<Map<String, Object>> resultList = new ArrayList<Map<String, Object>>();
             Map<String, Object> row = null;
@@ -36,19 +39,22 @@ public class PqsJdbcConnection {
             Integer columnCount = metaData.getColumnCount();
 
             while (rs.next()) {
-                row = new HashMap<String, Object>();
                 for (int i = 1; i <= columnCount; i++) {
-                    System.out.println("column name: " + metaData.getColumnName(i) + ", value: " + rs.getObject(i));
-                    row.put(metaData.getColumnName(i), rs.getObject(i));
+                    logger.info("column name: {}, value: {}", metaData.getColumnName(i), rs.getObject(i));
+                    if(rs.wasNull()){
+                        row.put(metaData.getColumnName(i), "redacted");
+                    }else{
+                        row.put(metaData.getColumnName(i), rs.getObject(i));
+                    }
                 }
                 resultList.add(row);
             }
-            System.out.println("result set size is " + resultList.size());
+            logger.info("result set size is {}", resultList.size());
 
             return resultList;
 
         } catch (SQLException e) {
-            System.out.println("hit an exception: " + e.toString());
+            logger.error(e.toString(), e);
             throw new RuntimeException(e);
         }
     }
@@ -57,10 +63,10 @@ public class PqsJdbcConnection {
         try {
             Connection connection = dataSource.getConnection();
             CallableStatement st = connection.prepareCall(query);
-            System.out.println("executing callable statement: " +  query);
+            logger.info("executing callable statement: {}", query);
             return st.executeUpdate();
         } catch (SQLException e) {
-            System.out.println(e);
+            logger.error(e.toString(), e);
             throw new SQLException(e);
         }
     }
