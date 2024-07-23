@@ -1,5 +1,6 @@
 package examples.automation;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.XML;
 import org.postgresql.ds.PGSimpleDataSource;
@@ -95,9 +96,7 @@ public class PqsJdbcConnection {
         String redactionStoredProc = String.format("select redact_contract('%s', '%s') from archives('%s')", contractId, redactionId, makeTemplateName(template));
         List<Map<String, Object>> list = runQuery(redactionStoredProc);
         list.forEach(contracts -> contracts.forEach((y, payload) -> contractsList.add(payload.toString())));
-        JSONArray redactedValue = new JSONArray(contractsList);
-        logger.info("Redacted value: " + redactedValue);
-        return redactedValue;
+        return new JSONArray(contractsList);
     }
 
 
