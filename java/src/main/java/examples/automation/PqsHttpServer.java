@@ -1,5 +1,7 @@
 package examples.automation;
 
+import com.daml.ledger.javaapi.data.Identifier;
+import com.sun.net.httpserver.Headers;
 import examples.automation.codegen.user.User;
 import examples.automation.codegen.user.Notification;
 import examples.automation.codegen.user.Alias;
@@ -9,13 +11,18 @@ import com.sun.net.httpserver.HttpExchange;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.List;
 import java.net.HttpURLConnection;
 
 public class PqsHttpServer {
+    private static final Logger logger = LoggerFactory.getLogger(PqsHttpServer.class.getName());
     HttpServer server = null;
 
     PqsHttpServer(PqsJdbcConnection pqsConnection) {
@@ -51,6 +58,14 @@ public class PqsHttpServer {
                     this.handlePqsQuery(exchange, pqsConnection.getArchivedContracts(Alias.TEMPLATE_ID))
             );
 
+            server.createContext("/redact", exchange -> {
+                try {
+                    handleRedaction(exchange, pqsConnection, Notification.TEMPLATE_ID);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -66,6 +81,48 @@ public class PqsHttpServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    //example for a post request
+    private void handleRedaction(HttpExchange exchange, PqsJdbcConnection connect, Identifier template) throws IOException {
+        String method = exchange.getRequestMethod();
+        String response = "Request Received";
+        try {
+            if (method.equals("POST")) {
+                InputStreamReader inStream = new InputStreamReader(exchange.getRequestBody());
+                BufferedReader br = new BufferedReader(inStream);
+
+                int b;
+                StringBuilder buf = new StringBuilder(512);
+                while ((b = br.read()) != -1) {
+                    buf.append((char) b);
+                }
+
+                br.close();
+                inStream.close();
+                JSONObject jsonBody = new JSONObject(buf.toString());
+                String contractId = jsonBody.get("contractId").toString();
+
+                response = connect.redactByContractId(contractId, template).toString();
+            } else {
+                throw new Exception("Not valid request method");
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            response = e.toString();
+        }
+
+        Headers responseHeaders = exchange.getResponseHeaders();
+        responseHeaders.add("Access-Control-Allow-Origin", "*");
+        responseHeaders.add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
+        responseHeaders.add("Access-Control-Allow-Credentials", "true");
+        responseHeaders.add("Access-Control-Allow-Methods", "GET, POST");
+
+        //Sending back response to the client
+        exchange.sendResponseHeaders(200, response.getBytes().length);
+        OutputStream outStream = exchange.getResponseBody();
+        outStream.write(response.getBytes());
+        outStream.close();
     }
 
     public void start() {
