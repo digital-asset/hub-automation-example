@@ -41,9 +41,9 @@ public class PqsJdbcConnection {
             while (rs.next()) {
                 for (int i = 1; i <= columnCount; i++) {
                     logger.info("column name: {}, value: {}", metaData.getColumnName(i), rs.getObject(i));
-                    if(rs.wasNull()){
+                    if (rs.wasNull()) {
                         row.put(metaData.getColumnName(i), "redacted");
-                    }else{
+                    } else {
                         row.put(metaData.getColumnName(i), rs.getObject(i));
                     }
                 }
@@ -97,7 +97,7 @@ public class PqsJdbcConnection {
     //redaction example
     public JSONArray redactByContractId(String contractId, Identifier template) throws SQLException {
 
-        String redactionId =  UUID.randomUUID().toString();
+        String redactionId = UUID.randomUUID().toString();
         List<String> contractsList = new ArrayList<String>();
         String redactionStoredProc = String.format("select redact_contract('%s', '%s') from archives('%s')", contractId, redactionId, makeTemplateName(template));
         List<Map<String, Object>> list = runQuery(redactionStoredProc);
@@ -117,10 +117,10 @@ public class PqsJdbcConnection {
 
         String createIndexStatement = createIndexQuery("example_model_request_id",
                 "example-model:" + makeTemplateName(template),
-                   "((payload->>''party'')::text)",
-                   "btree");
+                "((payload->>''party'')::text)",
+                "btree");
         int s = callableStatement(createIndexStatement);
-        contractsList.add(s,toString());
+        contractsList.add(s, toString());
         return new JSONArray(contractsList);
     }
 

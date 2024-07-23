@@ -9,6 +9,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
@@ -26,28 +27,28 @@ public class PqsHttpServer {
 
             // endpoints for active contracts
             server.createContext("/active/users", exchange ->
-                this.handlePqsQuery(exchange, pqsConnection.getActiveContracts(User.TEMPLATE_ID))
+                    this.handlePqsQuery(exchange, pqsConnection.getActiveContracts(User.TEMPLATE_ID))
             );
 
             server.createContext("/active/notifications", exchange ->
-                this.handlePqsQuery(exchange, pqsConnection.getActiveContracts(Notification.TEMPLATE_ID))
+                    this.handlePqsQuery(exchange, pqsConnection.getActiveContracts(Notification.TEMPLATE_ID))
             );
 
             server.createContext("/active/aliases", exchange ->
-                this.handlePqsQuery(exchange, pqsConnection.getActiveContracts(Alias.TEMPLATE_ID))
+                    this.handlePqsQuery(exchange, pqsConnection.getActiveContracts(Alias.TEMPLATE_ID))
             );
 
             // endpoints for archived contracts
             server.createContext("/archives/users", exchange ->
-                this.handlePqsQuery(exchange, pqsConnection.getArchivedContracts(User.TEMPLATE_ID))
+                    this.handlePqsQuery(exchange, pqsConnection.getArchivedContracts(User.TEMPLATE_ID))
             );
 
             server.createContext("/archives/notifications", exchange ->
-                this.handlePqsQuery(exchange, pqsConnection.getArchivedContracts(Notification.TEMPLATE_ID))
+                    this.handlePqsQuery(exchange, pqsConnection.getArchivedContracts(Notification.TEMPLATE_ID))
             );
 
             server.createContext("/archives/aliases", exchange ->
-                this.handlePqsQuery(exchange, pqsConnection.getArchivedContracts(Alias.TEMPLATE_ID))
+                    this.handlePqsQuery(exchange, pqsConnection.getArchivedContracts(Alias.TEMPLATE_ID))
             );
 
         } catch (IOException e) {
