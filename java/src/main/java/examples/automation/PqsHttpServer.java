@@ -65,6 +65,7 @@ public class PqsHttpServer {
                     throw new RuntimeException(e);
                 }
             });
+
             server.createContext("/dropIndex", exchange -> {
                 try {
                     handleDropIndex(exchange, pqsConnection);
@@ -133,12 +134,11 @@ public class PqsHttpServer {
         outStream.close();
     }
 
-
     //drop index
     private void handleDropIndex(HttpExchange exchange, PqsJdbcConnection connect) throws IOException {
         String method = exchange.getRequestMethod();
         String response = "Request Received";
-        try{
+        try {
             if (method.equals("POST")) {
                 InputStreamReader inStream = new InputStreamReader(exchange.getRequestBody());
                 BufferedReader br = new BufferedReader(inStream);
@@ -155,18 +155,17 @@ public class PqsHttpServer {
                 String contractId = jsonBody.get("indexName").toString();
 
                 response = connect.dropIndex(contractId).toString();
-            }
-            else{
+            } else {
                 throw new Exception("Not valid request method");
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error(e.getMessage());
             response = e.toString();
         }
 
         Headers responseHeaders = exchange.getResponseHeaders();
         responseHeaders.add("Access-Control-Allow-Origin", "*");
-        responseHeaders.add("Access-Control-Allow-Headers","origin, content-type, accept, authorization");
+        responseHeaders.add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
         responseHeaders.add("Access-Control-Allow-Credentials", "true");
         responseHeaders.add("Access-Control-Allow-Methods", "GET, POST");
 
