@@ -66,6 +66,15 @@ public class PqsHttpServer {
                 }
             });
 
+            server.createContext("/dropIndex", exchange -> {
+                try {
+                    handleDropIndex(exchange, pqsConnection);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -104,6 +113,48 @@ public class PqsHttpServer {
                 String contractId = jsonBody.get("contractId").toString();
 
                 response = connect.redactByContractId(contractId, template).toString();
+            } else {
+                throw new Exception("Not valid request method");
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            response = e.toString();
+        }
+
+        Headers responseHeaders = exchange.getResponseHeaders();
+        responseHeaders.add("Access-Control-Allow-Origin", "*");
+        responseHeaders.add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
+        responseHeaders.add("Access-Control-Allow-Credentials", "true");
+        responseHeaders.add("Access-Control-Allow-Methods", "GET, POST");
+
+        //Sending back response to the client
+        exchange.sendResponseHeaders(200, response.getBytes().length);
+        OutputStream outStream = exchange.getResponseBody();
+        outStream.write(response.getBytes());
+        outStream.close();
+    }
+
+    //drop index
+    private void handleDropIndex(HttpExchange exchange, PqsJdbcConnection connect) throws IOException {
+        String method = exchange.getRequestMethod();
+        String response = "Request Received";
+        try {
+            if (method.equals("POST")) {
+                InputStreamReader inStream = new InputStreamReader(exchange.getRequestBody());
+                BufferedReader br = new BufferedReader(inStream);
+
+                int b;
+                StringBuilder buf = new StringBuilder(512);
+                while ((b = br.read()) != -1) {
+                    buf.append((char) b);
+                }
+
+                br.close();
+                inStream.close();
+                JSONObject jsonBody = new JSONObject(buf.toString());
+                String contractId = jsonBody.get("indexName").toString();
+
+                response = connect.dropIndex(contractId).toString();
             } else {
                 throw new Exception("Not valid request method");
             }
