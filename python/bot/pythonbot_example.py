@@ -37,30 +37,42 @@ async def main():
 
     # The URL path to the ledger you would like to connect to
     url = os.getenv('DAML_LEDGER_URL') or "localhost:6865"
+    logging.info(f"url: {url}")
 
     # The party that is running the automation if the automation was configured to run as a party.
     # The party will _only_ be able to see and operate on contracts that this party has access to via
     # signatory or observer!
-    party = Party(os.getenv('DAML_LEDGER_PARTY') or "party")
+    party = Party(os.getenv('DAML_LEDGER_PARTY') or None)
+    logging.info(f"party: {party}")
 
-    # The name of the application for authorization purposes. If running as a User, the 'application_name'
-    # parameter in dazl.connect _must_ be set to this variable.
-    application_name = os.getenv('DAML_LEDGER_APPLICATION_NAME') or "DAZL-Client"
+    # If running as a User, the User Id will be set to the environment variable DAML_USER_ID.
+    user_id = os.getenv('DAML_USER_ID') or None
+    logging.info(f"user_id: {user_id}")
 
-    # If the automation was configured to run as a User, DAML_LEDGER_PARTY will be set to "user",
-    # so we can use the user management functionality of dazl to retrieve the current running user's
-    # primary party.
-    try:
-        async with connect(url=url) as conn:
-            user = await conn.get_user()
-            logging.info(f"Setting party to {user.id}'s primary party: {user.primary_party}")
-            party = Party(user.primary_party)
-    except:
-        logging.info(f"User not found, using party {party}")
+    # The name of the application for authorization purposes. If running as a party, the 'application_name'
+    # parameter in dazl.connect _must_ be set to this variable.  For users, the user_id field will be used
+    # to populate this value
+    application_name = os.getenv('DAML_LEDGER_APPLICATION_NAME') or None
+    logging.info(f"application_name: {application_name}")
 
+    # if running as a user
+    if user_id is not None:
+        _additional_params = {
+            "user_id": user_id
+        }
 
-    # Start up a dazl connection
-    async with connect(url=url, act_as=party, application_name=application_name) as conn:
+    # if running as a party
+    elif party is not None and application_name is not None:
+        _additional_params = {
+            "act_as": party,
+            "application_name": application_name,
+        }
+    # if we do not see either a party or user id, we cannot connect
+    else:
+        _additional_params = None
+        logging.error("must set either DAML_LEDGER_PARTY or DAML_USER_ID")
+
+    async with connect(url=url, **_additional_params) as conn:
 
         # Stream both of our templates forever
         async with conn.stream_many([Templates.User, Templates.Alias, Templates.Notification]) as stream:
