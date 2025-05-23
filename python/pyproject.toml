@@ -3,7 +3,7 @@
 
 [tool.poetry]
 name = "bot"
-version = "0.3.0"
+version = "0.4.0"
 description = "Example of a Daml Hub Pythonbot"
 authors = ["Digital Asset"]
 

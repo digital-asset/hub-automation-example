@@ -49,30 +49,10 @@ async def main():
     user_id = os.getenv('DAML_USER_ID') or None
     logging.info(f"user_id: {user_id}")
 
-    # The name of the application for authorization purposes. If running as a party, the 'application_name'
-    # parameter in dazl.connect _must_ be set to this variable.  For users, the user_id field will be used
-    # to populate this value
-    application_name = os.getenv('DAML_LEDGER_APPLICATION_NAME') or None
-    logging.info(f"application_name: {application_name}")
-
-    # if running as a user
-    if user_id is not None:
-        _additional_params = {
-            "user_id": user_id
-        }
-
-    # if running as a party
-    elif party is not None and application_name is not None:
-        _additional_params = {
-            "act_as": party,
-            "application_name": application_name,
-        }
-    # if we do not see either a party or user id, we cannot connect
-    else:
-        _additional_params = None
-        logging.error("must set either DAML_LEDGER_PARTY or DAML_USER_ID")
-
-    async with connect(url=url, **_additional_params) as conn:
+    # connect will pick up the relevant environment variable to run either
+    # as party (DAML_LEDGER_PARTY)
+    # or user (DAML_USER_ID)
+    async with connect(url=url) as conn:
 
         # Stream both of our templates forever
         async with conn.stream_many([Templates.User, Templates.Alias, Templates.Notification]) as stream:
